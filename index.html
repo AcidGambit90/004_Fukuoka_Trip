@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-[#FAF8F5] text-stone-900 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fukuoka Explorer | คู่มือนำเที่ยวฟุกุโอกะ</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans Thai"', '"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              vermilion: '#D9381E',
+              vermilionHover: '#C02E16',
+              cinnabar: '#E24A32',
+              navy: '#1A2332',
+              cream: '#FAF8F5',
+              surface: '#FFFFFF',
+              sand: '#F3EFEA',
+              border: '#E8E3DC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FAF8F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8D2C9;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B8B0A4;
+    }
+
+    /* iOS safe areas */
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Typographic hierarchy scale */
+    h1 { font-size: 1.5rem; line-height: 1.25; }
+    h2 { font-size: 1.25rem; line-height: 1.3; }
+    h3 { font-size: 1rem; line-height: 1.4; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen font-sans bg-[#FAF8F5] text-stone-900">
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#E8E3DC] transition-all">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-brand-vermilion flex items-center justify-center text-white shadow-sm font-bold text-sm tracking-tight">
+          福岡
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-stone-900 tracking-tight leading-tight">Fukuoka Trip</h1>
+          <p class="text-[11px] text-stone-500 font-medium">แผนการท่องเที่ยว Fukuoka</p>
+        </div>
+      </div>
+
+      <!-- Sync Button & Status Indicator -->
+      <div class="flex items-center space-x-2">
+        <button id="refreshBtn" onclick="syncData()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-[#E8E3DC] text-stone-700 hover:bg-stone-50 active:scale-95 transition-all shadow-sm">
+          <svg id="refreshIcon" class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span id="syncStatusText">ซิงค์ชีท</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs (Segmented Control) -->
+    <div class="max-w-4xl mx-auto px-4 pb-2.5 pt-1">
+      <div class="grid grid-cols-3 p-1 bg-stone-200/70 rounded-xl text-xs font-semibold text-stone-600">
+        <button onclick="switchTab('spots')" id="tabBtn-spots" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 bg-white text-stone-900 shadow-sm font-bold">
+          <svg class="w-4 h-4 text-brand-vermilion" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>จุดเช็คอิน</span>
+          <span id="tabCountBadge" class="ml-1 px-1.5 py-0.2 bg-stone-100 text-stone-600 rounded-full text-[10px] font-medium">0</span>
+        </button>
+
+        <button onclick="switchTab('expenses')" id="tabBtn-expenses" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>บันทึกค่าใช้จ่าย</span>
+        </button>
+
+        <button onclick="switchTab('flight')" id="tabBtn-flight" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900">
+          <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+          </svg>
+          <span>เที่ยวบินขากลับ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-4">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: SPOTS EXPLORER -->
+    <!-- ===================================================================== -->
+    <section id="tabContent-spots" class="space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-bold text-stone-900 tracking-tight">สำรวจจุดเช็คอิน</h2>
+        <span class="text-xs text-stone-500 font-medium">120+ จุดยอดนิยม</span>
+      </div>
+        
+      <!-- Filter Card -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3">
+        <!-- Search Input -->
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="ค้นหาชื่อร้าน, สถานี, เมนู, ประเภท เช่น Shin shin, Hyotan..." 
+            class="w-full pl-10 pr-9 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-vermilion/20 focus:border-brand-vermilion transition-all font-medium text-stone-900"
+            oninput="handleSearch(this.value)"
+          >
+          <button 
+            id="clearSearchBtn" 
+            onclick="clearSearch()" 
+            class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Quick Filter Chips (Horizontal Scrollable) -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar py-0.5 text-xs font-semibold">
+          <button onclick="setQuickFilter('ALL')" id="qf-ALL" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm">
+            ทั้งหมด
+          </button>
+          <button onclick="setQuickFilter('STAR')" id="qf-STAR" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200 flex items-center space-x-1">
+            <span class="text-amber-500">★</span>
+            <span>ต้องไป (Top Picks)</span>
+          </button>
+          <button onclick="setQuickFilter('Food')" id="qf-Food" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            🍣 อาหาร / ซูชิ / ราเมน
+          </button>
+          <button onclick="setQuickFilter('Coffee')" id="qf-Coffee" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            ☕ คาเฟ่ & กาแฟ
+          </button>
+          <button onclick="setQuickFilter('Shopping')" id="qf-Shopping" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            🛍️ ช้อปปิ้ง
+          </button>
+          <button onclick="setQuickFilter('Yatai')" id="qf-Yatai" class="px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            🍢 แผงลอย Yatai
+          </button>
+        </div>
+
+        <!-- Detailed Dropdowns: Station & Category & Sort (Two-way Dependent) -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 border-t border-stone-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">สถานี / ย่าน (Station)</label>
+            <select id="stationFilter" onchange="onStationFilterChange()" class="w-full py-2 px-3 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 focus:outline-none focus:border-brand-vermilion">
+              <option value="">ทุกสถานี (All Stations)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">หมวดหมู่ย่อย (Category)</label>
+            <select id="typeFilter" onchange="onTypeFilterChange()" class="w-full py-2 px-3 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 focus:outline-none focus:border-brand-vermilion">
+              <option value="">ทุกหมวดหมู่ (All Types)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">เรียงลำดับ (Sort by)</label>
+            <select id="sortFilter" onchange="applyFilters()" class="w-full py-2 px-3 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-800 focus:outline-none focus:border-brand-vermilion">
+              <option value="star_rating">⭐ แนะนำ + คะแนนสูงก่อน</option>
+              <option value="rating_desc">คะแนน 10 → 1 (High to Low)</option>
+              <option value="name_asc">ชื่อร้าน (A → Z)</option>
+              <option value="station">แยกตามสถานี (Station)</option>
+            </select>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Results Stats & Active Filters Badge -->
+      <div class="flex items-center justify-between px-1">
+        <div class="text-xs text-stone-600 font-medium">
+          แสดง <span id="filteredCount" class="font-bold text-stone-900">0</span> จาก <span id="totalCount" class="font-bold text-stone-900">0</span> สถานที่
+        </div>
+        <button id="resetFilterBtn" onclick="resetAllFilters()" class="hidden text-xs text-brand-vermilion hover:underline font-semibold flex items-center space-x-1">
+          <span>ล้างตัวกรองทั้งหมด</span>
+        </button>
+      </div>
+
+      <!-- Spots List Grid Container -->
+      <div id="spotsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-white rounded-2xl p-8 border border-[#E8E3DC] text-center space-y-3">
+        <div class="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-400">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <p class="text-sm font-bold text-stone-800">ไม่พบสถานที่ที่ตรงกับเงื่อนไข</p>
+        <p class="text-xs text-stone-500 max-w-xs mx-auto">ลองเปลี่ยนคำค้นหา หรือกดล้างตัวกรองเพื่อดูสถานที่ทั้งหมด</p>
+        <button onclick="resetAllFilters()" class="px-4 py-2 bg-stone-900 text-white rounded-xl text-xs font-semibold hover:bg-stone-800 transition-all shadow-sm">
+          แสดงสถานที่ทั้งหมด
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: EXPENSE TRACKER -->
+    <!-- ===================================================================== -->
+    <section id="tabContent-expenses" class="hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-bold text-stone-900 tracking-tight">บันทึกค่าใช้จ่ายทริป</h2>
+        <span class="text-xs text-stone-500 font-medium">คำนวณ JPY ↔ THB</span>
+      </div>
+      
+      <!-- Currency Exchange & Totals Overview -->
+      <div class="bg-gradient-to-br from-stone-900 to-stone-800 text-white rounded-2xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-700/60 pb-3">
+          <div>
+            <div class="flex items-center space-x-1.5 text-xs text-amber-400 font-bold uppercase tracking-wider mb-0.5">
+              <span>🏆</span>
+              <span>Grand Total ประจำ Trip</span>
+            </div>
+            <div class="text-2xl font-black tracking-tight text-white mt-0.5">
+              ¥<span id="totalJpyDisplay">0</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-stone-400 font-medium">คิดเป็นเงินบาท (THB)</span>
+            <div class="text-xl font-bold text-amber-400 mt-0.5">
+              ฿<span id="totalThbDisplay">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Per Person Breakdown Summary (Flattened, no nested card) -->
+        <div class="grid grid-cols-3 divide-x divide-stone-700/60 pt-1 text-center">
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-indigo-300">👤 Pi</span>
+            <div class="text-sm font-bold font-mono text-white mt-0.5">¥<span id="totalPiJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="totalPiThb">0</span></div>
+          </div>
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-rose-300">👤 Pung</span>
+            <div class="text-sm font-bold font-mono text-white mt-0.5">¥<span id="totalPungJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="totalPungThb">0</span></div>
+          </div>
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-emerald-300">👥 กองกลาง</span>
+            <div class="text-sm font-bold font-mono text-white mt-0.5">¥<span id="totalAllJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="totalAllThb">0</span></div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-stone-300 pt-2 border-t border-stone-700/60">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-stone-400">อัตราแลกเปลี่ยน 1 JPY =</span>
+            <input 
+              type="number" 
+              id="exchangeRateInput" 
+              value="0.230" 
+              step="0.005" 
+              class="w-16 px-1.5 py-0.5 bg-stone-700/80 border border-stone-600 rounded text-center text-white font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+              onchange="updateExchangeRate(this.value)"
+            >
+            <span>บาท</span>
+          </div>
+          <div class="text-stone-400">
+            บันทึกแล้ว <span id="expenseCountDisplay" class="font-bold text-white">0</span> รายการ
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Expense Card -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-stone-900 flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            <span>บันทึกรายจ่ายใหม่</span>
+          </h2>
+          <span class="text-[11px] text-stone-500">บันทึกลงในชีทและเครื่อง</span>
+        </div>
+
+        <form id="expenseForm" onsubmit="handleSaveExpense(event)" class="space-y-3">
+          <!-- Person Selector (Pi, Pung, All) -->
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">ผู้จ่าย / สมาชิก (Person) *</label>
+            <div class="grid grid-cols-3 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="expPerson" value="Pi" class="peer sr-only">
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-indigo-600 transition-all flex items-center justify-center space-x-1">
+                  <span class="text-xs font-bold text-stone-900 peer-checked:text-white">👤 Pi</span>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="expPerson" value="Pung" class="peer sr-only">
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-rose-600 transition-all flex items-center justify-center space-x-1">
+                  <span class="text-xs font-bold text-stone-900 peer-checked:text-white">👤 Pung</span>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="expPerson" value="All" checked class="peer sr-only">
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-emerald-600 transition-all flex items-center justify-center space-x-1">
+                  <span class="text-xs font-bold text-stone-900 peer-checked:text-white">👥 กองกลาง</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-500 mb-1">รายการ / ชื่อร้าน *</label>
+              <input 
+                type="text" 
+                id="expTitle" 
+                required 
+                placeholder="เช่น ข้าวหน้าเนื้อ Shin shin, ขนมพาย..." 
+                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 focus:outline-none focus:border-brand-vermilion"
+              >
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-500 mb-1">หมวดหมู่ค่าใช้จ่าย</label>
+              <select id="expCategory" class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 focus:outline-none focus:border-brand-vermilion">
+                <option value="Food">🍱 Food</option>
+                <option value="Snack">🍡 Snack</option>
+                <option value="Combini">🏪 Combini</option>
+                <option value="Coffee">☕ Coffee</option>
+                <option value="Shop - Cosmetic">💄 Shop - Cosmetic</option>
+                <option value="Shop - Clothes">👕 Shop - Clothes</option>
+                <option value="Shop - Shoes">👟 Shop - Shoes</option>
+                <option value="Shop - Acces">💍 Shop - Acces</option>
+                <option value="Taxi">🚕 Taxi</option>
+                <option value="Parking Fee">🅿️ Parking Fee</option>
+                <option value="GAS">⛽ GAS</option>
+                <option value="Car Rental">🚗 Car Rental</option>
+                <option value="Hotel">🏨 Hotel</option>
+                <option value="Ticket - Train">🚆 Ticket - Train</option>
+                <option value="Ticket - Fee">🎟️ Ticket - Fee</option>
+                <option value="Other">🔖 Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-500 mb-1">จำนวนเงิน (เยน - JPY) *</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 font-bold text-xs">¥</span>
+                <input 
+                  type="text" 
+                  inputmode="numeric" 
+                  id="expAmountJPY" 
+                  required 
+                  placeholder="0" 
+                  class="w-full pl-7 pr-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-bold text-stone-900 font-mono focus:outline-none focus:border-brand-vermilion"
+                  oninput="formatJpyInput(this)"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-500 mb-1">คำนวณเงินบาท (THB)</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400 font-bold text-xs">฿</span>
+                <input 
+                  type="text" 
+                  id="expAmountTHB" 
+                  readonly 
+                  placeholder="0" 
+                  class="w-full pl-7 pr-3 py-2 bg-stone-100 border border-stone-200 rounded-xl text-xs font-bold text-stone-700 font-mono"
+                >
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-stone-500 mb-1">วันที่</label>
+              <input 
+                type="date" 
+                id="expDate" 
+                class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 focus:outline-none focus:border-brand-vermilion"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">บันทึกช่วยจำ (Note)</label>
+            <input 
+              type="text" 
+              id="expNote" 
+              placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)" 
+              class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900 focus:outline-none focus:border-brand-vermilion"
+            >
+          </div>
+
+          <button 
+            type="submit" 
+            id="saveExpBtn" 
+            class="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center space-x-1.5 active:scale-[0.99]"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>บันทึกค่าใช้จ่าย</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Expense List -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider">สรุปรายการใช้จ่ายรายวัน</h3>
+            <span id="expenseDaysBadge" class="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 px-2 py-0.5 rounded-full">0 วัน</span>
+          </div>
+          <button onclick="clearAllExpenses()" class="text-[11px] text-stone-400 hover:text-red-600 transition-colors">
+            ล้างประวัติในเครื่อง
+          </button>
+        </div>
+
+        <!-- Filter expenses by person (Pi, Pung, All) -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar text-xs font-semibold py-0.5 border-b border-stone-100 pb-2">
+          <button type="button" onclick="setExpenseUserFilter('ALL')" id="expTab-ALL" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm">
+            ทั้งหมด
+          </button>
+          <button type="button" onclick="setExpenseUserFilter('Pi')" id="expTab-Pi" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👤 Pi
+          </button>
+          <button type="button" onclick="setExpenseUserFilter('Pung')" id="expTab-Pung" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👤 Pung
+          </button>
+          <button type="button" onclick="setExpenseUserFilter('All')" id="expTab-All" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👥 All (กองกลาง)
+          </button>
+        </div>
+
+        <!-- Daily Overview Mini-Widget (Compact summary of each day) -->
+        <div id="dailyOverviewContainer" class="hidden"></div>
+
+        <!-- Grouped List of Expenses by Day with Daily Total -->
+        <div id="expenseListContainer" class="space-y-3">
+          <!-- Rendered dynamically grouped by date -->
+        </div>
+
+        <div id="noExpensesMessage" class="py-8 text-center text-xs text-stone-400">
+          ยังไม่มีการบันทึกค่าใช้จ่าย
+        </div>
+
+        <!-- Trip Grand Total Summary Card at the bottom -->
+        <div id="tripGrandTotalFooter" class="hidden pt-2"></div>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: FLIGHT SCHEDULE & DEPARTURE -->
+    <!-- ===================================================================== -->
+    <section id="tabContent-flight" class="hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-lg font-bold text-stone-900 tracking-tight">ข้อมูลเที่ยวบินขากลับ</h2>
+        <span class="text-xs text-stone-500 font-medium">สนามบินฟุกุโอกะ (FUK)</span>
+      </div>
+      
+      <!-- Flight Hero Card -->
+      <div class="bg-gradient-to-br from-[#1E293B] to-[#0F172A] text-white rounded-2xl p-5 shadow-sm space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-stone-700/60 pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded bg-brand-vermilion text-[11px] font-black uppercase tracking-wider text-white">
+              RETURN FLIGHT
+            </span>
+            <span id="flightAirlineDisplay" class="text-xs font-semibold text-stone-300">Thai AirAsia / Thai Airways</span>
+          </div>
+          <span id="flightNumberDisplay" class="font-mono text-xs font-bold text-amber-400 bg-stone-800 px-2 py-0.5 rounded border border-stone-700">
+            FD737 / TG649
+          </span>
+        </div>
+
+        <!-- Route Visualization -->
+        <div class="grid grid-cols-3 items-center text-center py-2">
+          <div>
+            <div class="text-2xl font-black tracking-tight text-white">FUK</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">Fukuoka Airport</div>
+            <div class="text-[10px] text-amber-400 font-medium">Terminal Int'l</div>
+          </div>
+
+          <div class="flex flex-col items-center justify-center">
+            <svg class="w-6 h-6 text-brand-vermilion rotate-90 my-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            <div class="text-[10px] text-stone-400 font-mono">Direct Flight</div>
+          </div>
+
+          <div>
+            <div class="text-2xl font-black tracking-tight text-white">BKK / DMK</div>
+            <div class="text-[11px] text-stone-400 mt-0.5">Bangkok, Thailand</div>
+            <div class="text-[10px] text-stone-400 font-medium">Suvarnabhumi / Don Mueang</div>
+          </div>
+        </div>
+
+        <!-- Departure Date & Time Info (Flattened divider, no nested card) -->
+        <div class="grid grid-cols-2 gap-4 pt-3 border-t border-stone-700/60">
+          <div>
+            <div class="text-[10px] uppercase font-bold text-stone-400">วันเดินทาง (Departure Date)</div>
+            <div id="flightDateDisplay" class="text-sm font-bold text-white mt-0.5 font-mono">2026-10-15</div>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase font-bold text-stone-400">เวลาเครื่องออก (Time)</div>
+            <div id="flightTimeDisplay" class="text-sm font-bold text-amber-400 mt-0.5 font-mono">11:55 น.</div>
+          </div>
+        </div>
+
+        <!-- Edit Flight Button -->
+        <div class="text-right">
+          <button onclick="toggleFlightEdit()" class="text-xs text-stone-400 hover:text-white underline font-medium">
+            แก้ไขข้อมูลเที่ยวบิน
+          </button>
+        </div>
+      </div>
+
+      <!-- Flight Edit Form (Hidden by default) -->
+      <div id="flightEditForm" class="hidden bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3">
+        <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider">กำหนดรายละเอียดเที่ยวบินของคุณ</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">สายการบิน</label>
+            <input type="text" id="editAirline" value="Thai AirAsia" class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">หมายเลขเที่ยวบิน</label>
+            <input type="text" id="editFlightNo" value="FD737" class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">วันเดินทาง</label>
+            <input type="date" id="editFlightDate" value="2026-10-15" class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900">
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">เวลาเครื่องออก</label>
+            <input type="time" id="editFlightTime" value="11:55" class="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl text-xs font-medium text-stone-900">
+          </div>
+        </div>
+        <div class="flex space-x-2 pt-1">
+          <button onclick="saveFlightEdit()" class="flex-1 py-2 bg-stone-900 text-white rounded-xl text-xs font-bold hover:bg-stone-800">
+            บันทึกเที่ยวบิน
+          </button>
+          <button onclick="toggleFlightEdit()" class="px-4 py-2 bg-stone-100 text-stone-700 rounded-xl text-xs font-medium hover:bg-stone-200">
+            ยกเลิก
+          </button>
+        </div>
+      </div>
+
+      <!-- Departure Timeline Guide -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3">
+        <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center space-x-1.5">
+          <svg class="w-4 h-4 text-brand-vermilion" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>ไทม์ไลน์เดินทางไปสนามบินฟุกุโอกะ (FUK)</span>
+        </h3>
+
+        <div class="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200 text-xs">
+          
+          <!-- Step 1 -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-stone-900 border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">1</div>
+            <div class="font-bold text-stone-900">3.5 ชั่วโมงก่อนเครื่องออก (ประมาณ 08:30)</div>
+            <div class="text-stone-600 mt-0.5">ออกจากที่พักย่าน Hakata / Tenjin มุ่งหน้าสู่สถานีรถไฟใต้ดิน Kuko Line</div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-stone-900 border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">2</div>
+            <div class="font-bold text-stone-900">นั่ง Subway ไปสถานี Fukuoka Airport (Domestic)</div>
+            <div class="text-stone-600 mt-0.5">จากสถานี Hakata นั่งเพียง 2 สถานี (ประมาณ 6 นาที, 260 เยน) ลงที่ปลายทางอาคารในประเทศ</div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-brand-vermilion border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">3</div>
+            <div class="font-bold text-brand-vermilion">ต่อ Free Shuttle Bus ไปอาคารระหว่างประเทศ (Int'l)</div>
+            <div class="text-stone-600 mt-0.5">ขึ้นรถบัสรับส่งฟรีหน้าอาคาร Domestic ใช้เวลาประมาณ 10-15 นาที (มีรถออกทุก 5-10 นาที)</div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">4</div>
+            <div class="font-bold text-stone-900">เช็คอิน โหลดกระเป๋า & สแกนภาษี Tax-Free</div>
+            <div class="text-stone-600 mt-0.5">เคาน์เตอร์เปิด 3 ชั่วโมงก่อนเดินทาง ตรวจสอบน้ำหนักกระเป๋า และสแกนพาสปอร์ตที่เคาน์เตอร์ศุลกากร</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Departure Checklist -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-2.5">
+        <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center space-x-1.5">
+          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Checklist ก่อนขึ้นเครื่อง</span>
+        </h3>
+
+        <div class="space-y-2 text-xs text-stone-700">
+          <label class="flex items-start space-x-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
+            <span>เตรียมพาสปอร์ต, บอร์ดดิ้งพาส, และเอกสาร Tax-Free Receipts ไว้ในกระเป๋าติดตัว</span>
+          </label>
+          <label class="flex items-start space-x-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
+            <span>ของเหลวเกิน 100ml โหลดลงใต้เครื่องทั้งหมด (ระวังครีม, โลชั่น, ราเมนสำเร็จรูปมีน้ำซุป)</span>
+          </label>
+          <label class="flex items-start space-x-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
+            <span>ใช้เหรียญเยน (JPY) ที่ตู้กดน้ำ หรือร้านขนมของฝาก Duty Free ในสนามบิน</span>
+          </label>
+          <label class="flex items-start space-x-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
+            <span>คืนบัตร IC Card (Hayakaken/Nimoca/Suica) หรือเก็บบัตรไว้ใช้ทริปหน้า</span>
+          </label>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-semibold shadow-lg opacity-0 pointer-events-none transition-all duration-300">
+    ข้อความแจ้งเตือน
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ===================================================================== -->
+  <script>
+    // State management
+    let spotsData = [{"id":1,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"GAP","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":2,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Alpen","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":3,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Rage Blue","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":4,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Murasaki Sport","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":5,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Wego","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":6,"flag":"**","rating":8,"type":"แผงลอย","station":"Canal City","shop":"Nakasu Food Stalls Street","location":"แผงลอยแถว Canal city","desc":"","mapsPhoto":"","mapsRating":""},{"id":7,"flag":"","rating":7,"type":"Coffee","station":"canal Kushida Shrine Station","shop":"Fuk Coffee","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":8,"flag":"**","rating":7,"type":"Sushi","station":"Daimyo","shop":"Hyotan Sushi","location":"ริมถนน Fukuokaeki ST 1 แถว daimyo","desc":"","mapsPhoto":"","mapsRating":""},{"id":9,"flag":"","rating":6,"type":"Sushi","station":"Daimyo","shop":"Hyotan Sushi","location":"B2 Solaria Stage","desc":"สายพาน","mapsPhoto":"","mapsRating":""},{"id":10,"flag":"**","rating":8,"type":"Shopping","station":"Daimyo","shop":"DIOR Fukuoka Iwataya","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":11,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"nanamica FUKUOKA","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":12,"flag":"","rating":7,"type":"ramen","station":"Daimyo","shop":"Gyoza & Ramen Danbo","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":13,"flag":"*","rating":8,"type":"Coffee","station":"Daimyo","shop":"Little Stand Daimyo store","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":14,"flag":"*","rating":7,"type":"sushi","station":"Daimyo","shop":"KURODAHAN","location":"ข้าวหน้าทะเล เน้นมากุโระ","desc":"","mapsPhoto":"","mapsRating":""},{"id":15,"flag":"*","rating":7,"type":"Tempura","station":"Daimyo","shop":"Tempura Hirao","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":16,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"H&M","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":17,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"Bingo Bongo","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":18,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"Hare","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":19,"flag":"","rating":7,"type":"sushi ริมทะเล","station":"Fukuoka","shop":"Itoshima Seafood Restaurant Futamigaura","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":20,"flag":"**","rating":8,"type":"เนื้อแฮมเบิรก","station":"hakata","shop":"Kiwamiya","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":21,"flag":"*","rating":8,"type":"Shopping","station":"hakata","shop":"FREAK'S STORE","location":"AMU Plaza Hakata City","desc":"","mapsPhoto":"","mapsRating":""},{"id":22,"flag":"**","rating":8,"type":"Ramen","station":"hakata","shop":"Shin shin","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":23,"flag":"","rating":7,"type":"Sushi","station":"hakata","shop":"Sushi Sakaba Sashisu (KITTE Hakata)","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":24,"flag":"","rating":7,"type":"super market","station":"hakata","shop":"Lopia","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":25,"flag":"","rating":7,"type":"Shopping","station":"hakata","shop":"Uniqlo GU","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":26,"flag":"**","rating":7,"type":"ข้าวเนื้อย่าง","station":"hakata","shop":"Musashi -wagyu","location":"ข้าวเนื้อย่าง","desc":"","mapsPhoto":"","mapsRating":""},{"id":27,"flag":"","rating":7,"type":"Coffee","station":"hakata","shop":"Komeda's Coffee Hakata Station Higashi","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":28,"flag":"","rating":7,"type":"ขนม","station":"hakata","shop":"Mon cher","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":29,"flag":"Pi","rating":7,"type":"Shopping","station":"hakata","shop":"TiC TAC","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":30,"flag":"**","rating":7,"type":"เนื้อย่าง Yakiniku","station":"hakata","shop":"Yakiniku Champion","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":31,"flag":"","rating":7,"type":"เนื้อย่าง Yakiniku","station":"hakata","shop":"Jojoen Kitte","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":32,"flag":"**","rating":7,"type":"ครัวซอง","station":"hakata","shop":"il FORNO del MIGNON","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":33,"flag":"","rating":7,"type":"Shopping","station":"hakata","shop":"Tokyu Hands","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":34,"flag":"*","rating":7,"type":"ร้านขนมปัง","station":"hakata","shop":"Dacomecca","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":35,"flag":"","rating":7,"type":"เนื้อย่าง Yakiniku","station":"hakata","shop":"Nikuichi (Hakata)","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":36,"flag":"","rating":7,"type":"ramen","station":"hakata","shop":"Hakata Ikkousha","location":"rating 3000","desc":"","mapsPhoto":"","mapsRating":""},{"id":37,"flag":"**","rating":7,"type":"Coffee","station":"hakata","shop":"Fuglen","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":38,"flag":"","rating":7,"type":"ramen","station":"hakata","shop":"Ichiran","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":39,"flag":"","rating":7,"type":"Coffee","station":"hakata","shop":"REC COFFEE Hakata Marui Shop","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":40,"flag":"7","rating":7,"type":"ปลาไหล","station":"hakata","shop":"Eel eight","location":"rating ดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":41,"flag":"","rating":7,"type":"วัด","station":"hakata","shop":"Kushida Shrine","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":42,"flag":"8","rating":7,"type":"ครัวซอง","station":"hakata","shop":"BOUL'ANGE","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":43,"flag":"8","rating":7,"type":"Udon เมนไทโกะ","station":"hakata","shop":"Menya ISHII","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":44,"flag":"8","rating":7,"type":"ramen","station":"hakata","shop":"Hakata Ikkousha","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":45,"flag":"**","rating":7,"type":"Ramen","station":"hakata","shop":"Hakata Issou Honten","location":"ramen อันดับ 2","desc":"","mapsPhoto":"","mapsRating":""},{"id":46,"flag":"","rating":7,"type":"Coffee","station":"hakata","shop":"Hoshino Coffee KITTE Hakata Shop","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":47,"flag":"","rating":7,"type":"ขนมของฝาก","station":"hakata","shop":"AMANBERRY","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":48,"flag":"","rating":7,"type":"shabu","station":"hakata","shop":"Nishijin Hatsuki Kuten Hakata Store","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":49,"flag":"8","rating":7,"type":"ลิ้นย่าง","station":"hakata","shop":"Tanya","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":50,"flag":"","rating":7,"type":"shopping","station":"hakata","shop":"OVERRIDE/kaorinomori アミュプラザ博多","location":"5 F","desc":"","mapsPhoto":"","mapsRating":""},{"id":51,"flag":"8","rating":7,"type":"Coffee","station":"Hirao","shop":"NO COFFEE","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":52,"flag":"Pi","rating":7,"type":"Shopping","station":"LALAport","shop":"Murasaki Sport","location":"ANTIBAL Shoulder Bag with Filling Quilting","desc":"","mapsPhoto":"","mapsRating":""},{"id":53,"flag":"","rating":7,"type":"Shopping","station":"LALAport","shop":"Wego","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":54,"flag":"","rating":7,"type":"Shopping","station":"LALAport","shop":"loft","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":55,"flag":"","rating":7,"type":"Shopping","station":"LALAport","shop":"ZARA","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":56,"flag":"","rating":7,"type":"Sakura","station":"Oharipark","shop":"Oharipark","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":57,"flag":"","rating":7,"type":"Sakura","station":"Oharipark","shop":"maizuru park","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":58,"flag":"***","rating":7,"type":"Cafe","station":"Oharipark","shop":"Local","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":59,"flag":"","rating":7,"type":"ชมวิว","station":"Seaside park","shop":"Momochi Seaside Park","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":60,"flag":"","rating":7,"type":"coffee","station":"Seaside park","shop":"Komeda's Coffee","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":62,"flag":"**","rating":8,"type":"เนื้อแฮมเบิรก","station":"Tenjin","shop":"Kiwamiya","location":"ใน Parco","desc":"","mapsPhoto":"","mapsRating":""},{"id":63,"flag":"**","rating":8,"type":"ขนม","station":"Tenjin","shop":"I'm Donut","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":64,"flag":"","rating":7,"type":"Yatai","station":"Tenjin","shop":"Yatai Aka-chochin","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":65,"flag":"**","rating":8,"type":"Shopping","station":"Tenjin","shop":"FREAK ' S STORE Fukuokaparukoten","location":"F4 Fukuoka Parco","desc":"","mapsPhoto":"","mapsRating":""},{"id":66,"flag":"**","rating":8,"type":"Shopping","station":"Tenjin","shop":"BEAMS","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":67,"flag":"**","rating":8,"type":"ขนม","station":"Tenjin","shop":"RINGO Tenjin Underground Mall","location":"Appie Pie","desc":"","mapsPhoto":"","mapsRating":""},{"id":68,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"BIC CAMERA Tenjin","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":69,"flag":"*","rating":8,"type":"Coffee","station":"Tenjin","shop":"Blue Bottle Coffee","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":70,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"Hare","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":71,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"Onitsuka Tiger","location":"PARCO","desc":"","mapsPhoto":"","mapsRating":""},{"id":72,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"Uniqlo","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":73,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"ZARA","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":74,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"Celine","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":75,"flag":"","rating":7,"type":"ขนมของฝาก","station":"Tenjin","shop":"Yoku Moku","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":76,"flag":"Pi","rating":7,"type":"Shopping","station":"Tenjin","shop":"TiCTAC","location":"F3 Fukuoka Parco","desc":"","mapsPhoto":"","mapsRating":""},{"id":77,"flag":"","rating":8,"type":"Ramen","station":"Tenjin","shop":"Shin shin","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":78,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"3 coins","location":"B1","desc":"","mapsPhoto":"","mapsRating":""},{"id":79,"flag":"***","rating":7,"type":"ข้าว 3 ไข่","station":"Tenjin","shop":"Hakata seafood Uoden","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":80,"flag":"*","rating":7,"type":"Ramen","station":"Tenjin","shop":"Hakata Ikkousha Nishi Nakasu","location":"rating ดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":81,"flag":"","rating":7,"type":"shabu","station":"Tenjin","shop":"Shabuzen Showa St Daimyo","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":82,"flag":"","rating":7,"type":"Sushi","station":"Tenjin","shop":"Sashisu Tenjin","location":"เหมือนจะดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":83,"flag":"*","rating":7,"type":"Ramen","station":"Tenjin","shop":"Ramen Kanetora","location":"tsukemen บิ๊ม","desc":"","mapsPhoto":"","mapsRating":""},{"id":84,"flag":"","rating":7,"type":"Coffee","station":"Tenjin","shop":"nana's green tea","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":85,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"MUJI Daimaru Fukuoka Tenjin Store","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":86,"flag":"Pi","rating":7,"type":"Shopping","station":"Tenjin","shop":"Tenjin LOFT","location":"ดูนาฬิกา","desc":"","mapsPhoto":"","mapsRating":""},{"id":87,"flag":"","rating":8,"type":"Coffee","station":"Tenjin","shop":"Rec Coffee Yakuin Station Front Store","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":88,"flag":"","rating":8,"type":"Coffee","station":"Tenjin","shop":"Rec Coffee Tenjinminami","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":89,"flag":"***","rating":7,"type":"Coffee","station":"Tenjin","shop":"Manu Coffee","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":90,"flag":"8","rating":7,"type":"กึ้งย่าง ปลาย่าง","station":"Tenjin","shop":"Musashiza","location":"เปิดตอนเย็น","desc":"","mapsPhoto":"","mapsRating":""},{"id":91,"flag":"*","rating":8,"type":"อาหารเช้าแบบ ญป","station":"Tenjin","shop":"Itookashi","location":"ดูดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":92,"flag":"**","rating":7,"type":"mentai","station":"Tenjin","shop":"Ganso Hakata Mentaiju Nishinakasu","location":"เมนไทโกะ บนข้าวสาหร่าย ขนมหวานอร่อย","desc":"","mapsPhoto":"","mapsRating":""},{"id":93,"flag":"7","rating":7,"type":"Coffee","station":"Tenjin","shop":"Pain Stock Tenjin","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":94,"flag":"","rating":7,"type":"sushi ตลาดปลา","station":"yakuin","shop":"Shokudo Mitsu","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":95,"flag":"","rating":7,"type":"เนื้ื้อย่าง","station":"yakuin","shop":"Japanese beef BAKURO","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":96,"flag":"","rating":8,"type":"เนื้อย่าง Yakiniku","station":"yakuin","shop":"Nikuichi (Yakuin)","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":97,"flag":"*","rating":7,"type":"Sushi","station":"แยกออกไป","shop":"Mawaru Sushi Ichiba","location":"ร้านซูชิกินอยู่ดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":98,"flag":"","rating":7,"type":"Sakura","station":"แยกออกไป","shop":"ซากุระที่ริมแม่น้ำ Ipponmatsu","location":"ฉีีกล่าง","desc":"","mapsPhoto":"","mapsRating":""},{"id":99,"flag":"","rating":7,"type":"Sakura","station":"นั่งบัส 24 นาที","shop":"Umi-gawa no Sakura namiki","location":"ฉีกขวา","desc":"","mapsPhoto":"","mapsRating":""},{"id":100,"flag":"","rating":7,"type":"Sakura","station":"Fukuoka","shop":"Nishi Park","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":101,"flag":"","rating":7,"type":"เก็บสครวเบอรี่","station":"แยกออกไป","shop":"Akiyama Engei - Strawberry Farm","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":102,"flag":"","rating":8,"type":"tonkatsu","station":"Kumamoto","shop":"KATSURETSUTEI South Kumamoto","location":"ข้าวหมูทอด สาขานี้คนน้อย","desc":"","mapsPhoto":"","mapsRating":""},{"id":103,"flag":"","rating":7,"type":"tonkatsu","station":"Kumamoto","shop":"Katsuretsu Tei Shinshigai","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":104,"flag":"5","rating":7,"type":"เนื้อม้า","station":"Kumamoto","shop":"SUGANOYA Ginza Street Store","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":105,"flag":"4","rating":7,"type":"เนื้อม้า","station":"Kumamoto","shop":"Mutsugorō","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":106,"flag":"","rating":7,"type":"Shopping","station":"Kumamoto","shop":"Sakura-no-baba Josaien","location":"หน้าปราสาท","desc":"","mapsPhoto":"","mapsRating":""},{"id":107,"flag":"","rating":7,"type":"coffee","station":"Kumamoto","shop":"Coffee gallery","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":108,"flag":"","rating":7,"type":"สวน","station":"Kumamoto","shop":"Suizenji Jojuen Garden","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":109,"flag":"","rating":7,"type":"coffee","station":"Kumamoto","shop":"ไร่ชาเขียว Ochamura","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":110,"flag":"","rating":7,"type":"Takachiho Gorge","station":"Takachiho Gorge","shop":"P2. Araragi Parking Lot","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":111,"flag":"","rating":7,"type":"Takachiho Gorge","station":"Takachiho Gorge","shop":"Takachiho Gorge","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":112,"flag":"","rating":7,"type":"Takachiho Gorge","station":"Takachiho Gorge","shop":"Takachiho Shrine","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":113,"flag":"","rating":7,"type":"Shopping","station":"Tenjin","shop":"Graniph","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":114,"flag":"","rating":7,"type":"ข้าวเนื้อแดง","station":"ASO","shop":"Meshi no Yamaichi","location":"ข้าวเนือ้แดง เบอร์ 2","desc":"","mapsPhoto":"","mapsRating":""},{"id":115,"flag":"**","rating":7,"type":"coffee","station":"ASO","shop":"Kusasenri Coffee Roastery","location":"ร้านกาแฟบนยอด ASO","desc":"","mapsPhoto":"","mapsRating":""},{"id":116,"flag":"*","rating":7,"type":"ปิ้งย่างหน้ากองไฟ","station":"ASO","shop":"Takamori Dengaku no Sato","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":117,"flag":"**","rating":7,"type":"จุดชมวิว","station":"ASO","shop":"Kusasenri Observatory","location":"","desc":"","mapsPhoto":"","mapsRating":""},{"id":118,"flag":"","rating":7,"type":"CAFE เผื่อกินข้าว","station":"ASO","shop":"New Kusasenri","location":"CAFE เผื่อกินข้าว","desc":"","mapsPhoto":"","mapsRating":""},{"id":119,"flag":"","rating":7,"type":"ข้าวเนื้อแดง","station":"ASO","shop":"Yokayoka Tei Akaushi-kan Miyaji Branch","location":"rating ดูดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":120,"flag":"","rating":7,"type":"ข้าวเนื้อแดง","station":"ASO","shop":"Iwasaki","location":"ดีสุดบน tablelog","desc":"","mapsPhoto":"","mapsRating":""},{"id":121,"flag":"***","rating":7,"type":"ข้าวเนื้อแดง","station":"ASO","shop":"Imakin Shokudo","location":"ข้าวเนือ้แดง no1","desc":"","mapsPhoto":"","mapsRating":""},{"id":122,"flag":"","rating":7,"type":"ข้าวเนื้อแดง","station":"ASO","shop":"Aso Hanabishi","location":"ข้าวเนือ้แดง  ดูดี","desc":"","mapsPhoto":"","mapsRating":""},{"id":123,"flag":"Pi","rating":7,"type":"shopping","station":"Daimyo","shop":"SMART CLOTHING STORE","location":"","desc":"","mapsPhoto":"","mapsRating":""}];
+    let currentFilters = {
+      search: '',
+      quick: 'ALL',
+      station: '',
+      type: '',
+      sort: 'star_rating'
+    };
+    let expensesData = [];
+    let exchangeRate = 0.230;
+
+    // Load initial data
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Set current date for expense form
+      const today = new Date().toISOString().split('T')[0];
+      const dateEl = document.getElementById('expDate');
+      if (dateEl) dateEl.value = today;
+
+      // Setup JPY input key listeners
+      setupJpyInputListeners();
+
+      // 2. Load stored expenses from localStorage
+      loadStoredExpenses();
+
+      // 3. Load flight data
+      loadFlightData();
+
+      // 4. Initialize spots data (fetch from GAS or use embedded fallback)
+      initData();
+    });
+
+    /**
+     * Data Initialization
+     */
+    function initData() {
+      // Check if running inside Google Apps Script
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        showToast('กำลังเชื่อมต่อข้อมูล Google Sheets...');
+        google.script.run
+          .withSuccessHandler(handleGASDataSuccess)
+          .withFailureHandler(handleGASDataError)
+          .getSpotsData();
+
+        google.script.run
+          .withSuccessHandler(handleGASExpensesSuccess)
+          .getExpenses();
+      } else {
+        // Fallback for local preview & offline use
+        loadFallbackData();
+      }
+    }
+
+    function handleGASExpensesSuccess(res) {
+      if (res && res.success && res.data && res.data.length > 0) {
+        expensesData = res.data;
+        saveExpensesToStorage();
+        renderExpenses();
+      }
+    }
+
+    function syncData() {
+      const icon = document.getElementById('refreshIcon');
+      const text = document.getElementById('syncStatusText');
+      icon.classList.add('animate-spin');
+      text.textContent = 'กำลังซิงค์...';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            icon.classList.remove('animate-spin');
+            text.textContent = 'ซิงค์ชีท';
+            handleGASDataSuccess(res);
+            showToast('อัปเดตข้อมูลจาก Google Sheets เรียบร้อยแล้ว!');
+          })
+          .withFailureHandler((err) => {
+            icon.classList.remove('animate-spin');
+            text.textContent = 'ซิงค์ชีท';
+            handleGASDataError(err);
+          })
+          .getSpotsData();
+
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success && res.data && res.data.length > 0) {
+              expensesData = res.data;
+              saveExpensesToStorage();
+              renderExpenses();
+            }
+          })
+          .getExpenses();
+      } else {
+        setTimeout(() => {
+          icon.classList.remove('animate-spin');
+          text.textContent = 'ซิงค์ชีท';
+          showToast('ใช้งานในโหมด Offline / Local Preview');
+        }, 600);
+      }
+    }
+
+    function handleGASDataSuccess(response) {
+      if (response && response.success && response.data) {
+        spotsData = response.data;
+        populateDropdowns(response.stations, response.types);
+        applyFilters();
+      } else {
+        loadFallbackData();
+      }
+    }
+
+    function handleGASDataError(error) {
+      console.warn('GAS Fetch failed, switching to cached data:', error);
+      loadFallbackData();
+      showToast('ใช้ข้อมูลแคชสำรอง (Offline Mode)');
+    }
+
+    /**
+     * Populate filter dropdowns (Full)
+     */
+    function populateDropdowns(stations, types) {
+      const stationSelect = document.getElementById('stationFilter');
+      const typeSelect = document.getElementById('typeFilter');
+
+      const allStations = (stations && stations.length > 0) ? stations : [...new Set(spotsData.map(s => s.station).filter(Boolean))].sort();
+      const allTypes = (types && types.length > 0) ? types : [...new Set(spotsData.map(s => s.type).filter(Boolean))].sort();
+
+      const curStation = stationSelect.value;
+      const curType = typeSelect.value;
+
+      stationSelect.innerHTML = '<option value="">ทุกสถานี (All Stations)</option>';
+      allStations.forEach(st => {
+        const count = spotsData.filter(s => s.station === st).length;
+        const opt = document.createElement('option');
+        opt.value = st;
+        opt.textContent = `${st} (${count})`;
+        stationSelect.appendChild(opt);
+      });
+
+      typeSelect.innerHTML = '<option value="">ทุกหมวดหมู่ (All Types)</option>';
+      allTypes.forEach(tp => {
+        const count = spotsData.filter(s => s.type === tp).length;
+        const opt = document.createElement('option');
+        opt.value = tp;
+        opt.textContent = `${tp} (${count})`;
+        typeSelect.appendChild(opt);
+      });
+
+      if (curStation && allStations.includes(curStation)) stationSelect.value = curStation;
+      if (curType && allTypes.includes(curType)) typeSelect.value = curType;
+    }
+
+    /**
+     * Two-Way Dependent Filter: Station changed
+     * Updates Type dropdown options to only those available in the selected station
+     */
+    function onStationFilterChange() {
+      const selectedStation = document.getElementById('stationFilter').value;
+      const typeSelect = document.getElementById('typeFilter');
+      const currentSelectedType = typeSelect.value;
+
+      // Filter available types based on selected station
+      let relevantSpots = spotsData;
+      if (selectedStation) {
+        relevantSpots = spotsData.filter(s => s.station === selectedStation);
+      }
+
+      const availableTypes = [...new Set(relevantSpots.map(s => s.type).filter(Boolean))].sort();
+
+      typeSelect.innerHTML = '<option value="">ทุกหมวดหมู่ (All Types)</option>';
+      availableTypes.forEach(tp => {
+        const count = relevantSpots.filter(s => s.type === tp).length;
+        const opt = document.createElement('option');
+        opt.value = tp;
+        opt.textContent = `${tp} (${count})`;
+        typeSelect.appendChild(opt);
+      });
+
+      // Maintain selection if still valid; otherwise reset
+      if (currentSelectedType && availableTypes.includes(currentSelectedType)) {
+        typeSelect.value = currentSelectedType;
+      } else {
+        typeSelect.value = '';
+      }
+
+      applyFilters();
+    }
+
+    /**
+     * Two-Way Dependent Filter: Type changed
+     * Updates Station dropdown options to only those having the selected type
+     */
+    function onTypeFilterChange() {
+      const selectedType = document.getElementById('typeFilter').value;
+      const stationSelect = document.getElementById('stationFilter');
+      const currentSelectedStation = stationSelect.value;
+
+      // Filter available stations based on selected type
+      let relevantSpots = spotsData;
+      if (selectedType) {
+        relevantSpots = spotsData.filter(s => s.type === selectedType);
+      }
+
+      const availableStations = [...new Set(relevantSpots.map(s => s.station).filter(Boolean))].sort();
+
+      stationSelect.innerHTML = '<option value="">ทุกสถานี (All Stations)</option>';
+      availableStations.forEach(st => {
+        const count = relevantSpots.filter(s => s.station === st).length;
+        const opt = document.createElement('option');
+        opt.value = st;
+        opt.textContent = `${st} (${count})`;
+        stationSelect.appendChild(opt);
+      });
+
+      // Maintain selection if still valid; otherwise reset
+      if (currentSelectedStation && availableStations.includes(currentSelectedStation)) {
+        stationSelect.value = currentSelectedStation;
+      } else {
+        stationSelect.value = '';
+      }
+
+      applyFilters();
+    }
+
+    /**
+     * Filter and Search Logic
+     */
+    function handleSearch(val) {
+      currentFilters.search = val.trim().toLowerCase();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (currentFilters.search.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+      applyFilters();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      input.value = '';
+      currentFilters.search = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      applyFilters();
+    }
+
+    function setQuickFilter(mode) {
+      currentFilters.quick = mode;
+      
+      // Update chip styling
+      const chipIds = ['ALL', 'STAR', 'Food', 'Coffee', 'Shopping', 'Yatai'];
+      chipIds.forEach(id => {
+        const el = document.getElementById('qf-' + id);
+        if (!el) return;
+        if (id === mode) {
+          el.className = 'px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm flex items-center space-x-1';
+        } else {
+          el.className = 'px-3 py-1.5 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200 flex items-center space-x-1';
+        }
+      });
+
+      applyFilters();
+    }
+
+    function applyFilters() {
+      currentFilters.station = document.getElementById('stationFilter').value;
+      currentFilters.type = document.getElementById('typeFilter').value;
+      currentFilters.sort = document.getElementById('sortFilter').value;
+
+      // Filter array
+      let filtered = spotsData.filter(spot => {
+        // Quick filter
+        if (currentFilters.quick === 'STAR') {
+          if (!spot.flag || spot.flag.indexOf('*') === -1) return false;
+        } else if (currentFilters.quick === 'Coffee') {
+          const t = (spot.type || '').toLowerCase();
+          if (!t.includes('coffee') && !t.includes('cafe')) return false;
+        } else if (currentFilters.quick === 'Shopping') {
+          const t = (spot.type || '').toLowerCase();
+          if (!t.includes('shopping') && !t.includes('market')) return false;
+        } else if (currentFilters.quick === 'Food') {
+          const t = (spot.type || '').toLowerCase();
+          const isFood = t.includes('sushi') || t.includes('ramen') || t.includes('เนื้อ') || t.includes('tempura') || t.includes('udon') || t.includes('ข้าว') || t.includes('ปลา');
+          if (!isFood) return false;
+        } else if (currentFilters.quick === 'Yatai') {
+          const t = (spot.type || '').toLowerCase();
+          if (!t.includes('แผงลอย') && !t.includes('yatai')) return false;
+        }
+
+        // Station dropdown filter
+        if (currentFilters.station && spot.station !== currentFilters.station) {
+          return false;
+        }
+
+        // Category dropdown filter
+        if (currentFilters.type && spot.type !== currentFilters.type) {
+          return false;
+        }
+
+        // Search text filter: Search shop name and description / details
+        if (currentFilters.search) {
+          const q = currentFilters.search;
+          const matchShop = (spot.shop || '').toLowerCase().includes(q);
+          const matchDesc = (spot.desc || '').toLowerCase().includes(q);
+          const matchLocation = (spot.location || '').toLowerCase().includes(q);
+          const matchStation = (spot.station || '').toLowerCase().includes(q);
+          const matchType = (spot.type || '').toLowerCase().includes(q);
+          if (!matchShop && !matchDesc && !matchLocation && !matchStation && !matchType) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      // Sorting
+      filtered.sort((a, b) => {
+        if (currentFilters.sort === 'star_rating') {
+          const aStar = (a.flag || '').includes('**') ? 2 : ((a.flag || '').includes('*') ? 1 : 0);
+          const bStar = (b.flag || '').includes('**') ? 2 : ((b.flag || '').includes('*') ? 1 : 0);
+          if (bStar !== aStar) return bStar - aStar;
+          return (b.rating || 0) - (a.rating || 0);
+        } else if (currentFilters.sort === 'rating_desc') {
+          return (b.rating || 0) - (a.rating || 0);
+        } else if (currentFilters.sort === 'name_asc') {
+          return (a.shop || '').localeCompare(b.shop || '');
+        } else if (currentFilters.sort === 'station') {
+          return (a.station || '').localeCompare(b.station || '');
+        }
+        return 0;
+      });
+
+      renderSpots(filtered);
+    }
+
+    function resetAllFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sortFilter').value = 'star_rating';
+      currentFilters.search = '';
+      currentFilters.sort = 'star_rating';
+      populateDropdowns();
+      setQuickFilter('ALL');
+    }
+
+    /**
+     * Render Spots List
+     */
+    function renderSpots(spots) {
+      const container = document.getElementById('spotsContainer');
+      const emptyState = document.getElementById('emptyState');
+      const filteredCountEl = document.getElementById('filteredCount');
+      const totalCountEl = document.getElementById('totalCount');
+      const tabCountBadge = document.getElementById('tabCountBadge');
+      const resetBtn = document.getElementById('resetFilterBtn');
+
+      filteredCountEl.textContent = spots.length;
+      totalCountEl.textContent = spotsData.length;
+      tabCountBadge.textContent = spotsData.length;
+
+      const hasActiveFilters = currentFilters.search || currentFilters.station || currentFilters.type || currentFilters.quick !== 'ALL';
+      if (hasActiveFilters) {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+
+      if (spots.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+
+      container.innerHTML = spots.map(spot => {
+        const isMustVisit = (spot.flag || '').includes('**');
+        const isRecommended = (spot.flag || '').includes('*') && !isMustVisit;
+        const rating = spot.rating ? spot.rating.toFixed(1) : '7.0';
+        
+        let flagBadge = '';
+        if (isMustVisit) {
+          flagBadge = `
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-brand-vermilion text-white tracking-wider shadow-sm">
+              <span>★</span>
+              <span>MUST VISIT</span>
+            </span>
+          `;
+        } else if (isRecommended) {
+          flagBadge = `
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+              <span>★</span>
+              <span>RECOMMENDED</span>
+            </span>
+          `;
+        }
+
+        // Category Tag Color mapping
+        const typeLower = (spot.type || '').toLowerCase();
+        let typeBadgeClass = 'bg-stone-100 text-stone-700';
+        if (typeLower.includes('coffee') || typeLower.includes('cafe')) {
+          typeBadgeClass = 'bg-amber-50 text-amber-900 border border-amber-200/60';
+        } else if (typeLower.includes('sushi') || typeLower.includes('ramen') || typeLower.includes('ข้าว') || typeLower.includes('เนื้อ')) {
+          typeBadgeClass = 'bg-orange-50 text-orange-900 border border-orange-200/60';
+        } else if (typeLower.includes('shopping')) {
+          typeBadgeClass = 'bg-indigo-50 text-indigo-900 border border-indigo-200/60';
+        } else if (typeLower.includes('แผงลอย') || typeLower.includes('yatai')) {
+          typeBadgeClass = 'bg-rose-50 text-rose-900 border border-rose-200/60';
+        }
+
+        // Optional Photo from Sheet/Maps
+        const photoHtml = spot.mapsPhoto ? `
+          <div class="w-full h-36 -mt-4 -mx-4 mb-3 overflow-hidden rounded-t-2xl bg-stone-100">
+            <img 
+              src="${escapeHtml(spot.mapsPhoto)}" 
+              alt="${escapeHtml(spot.shop)}" 
+              loading="lazy" 
+              class="w-full h-full object-cover"
+              onerror="this.parentElement.style.display='none'"
+            >
+          </div>
+        ` : '';
+
+        return `
+          <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm hover:border-stone-300 transition-all flex flex-col justify-between space-y-3 overflow-hidden">
+            
+            <div class="space-y-2">
+              ${photoHtml}
+              <!-- Top Row: Flag & Rating & Category -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                  ${flagBadge}
+                  <span class="px-2 py-0.5 rounded-full text-[11px] font-medium ${typeBadgeClass}">
+                    ${escapeHtml(spot.type || 'General')}
+                  </span>
+                </div>
+
+                <!-- Rating -->
+                <div class="flex items-center space-x-1 text-stone-900">
+                  <span class="text-amber-500 text-xs">★</span>
+                  <span class="text-xs font-bold font-mono">${rating}</span>
+                </div>
+              </div>
+
+              <!-- Shop Name -->
+              <div>
+                <h3 class="text-base font-bold text-stone-900 tracking-tight leading-snug">
+                  ${escapeHtml(spot.shop)}
+                </h3>
+              </div>
+
+              <!-- Station & Location Info -->
+              <div class="flex items-start space-x-1.5 text-xs text-stone-600">
+                <svg class="w-3.5 h-3.5 text-brand-vermilion shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                <div class="font-medium">
+                  <span class="font-bold text-stone-800">${escapeHtml(spot.station || 'Fukuoka')}</span>
+                  ${spot.location ? `<span class="text-stone-400 mx-1">•</span><span>${escapeHtml(spot.location)}</span>` : ''}
+                </div>
+              </div>
+
+              <!-- Thai Description / Menu Note -->
+              ${spot.desc ? `
+                <div class="text-xs text-stone-600 bg-stone-50 px-2.5 py-1.5 rounded-lg font-medium">
+                  💡 ${escapeHtml(spot.desc)}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Footer: Google Maps Action Button -->
+            <div class="pt-2 border-t border-stone-100 flex items-center justify-between">
+              <span class="text-[11px] text-stone-400">นำทางด้วย Google Maps</span>
+              <a 
+                href="${escapeHtml(spot.mapsUrl || ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(spot.shop + ' ' + (spot.location || spot.station || '') + ' Fukuoka')))}" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center space-x-1 px-3 py-1.5 bg-stone-900 hover:bg-stone-800 active:scale-95 text-white rounded-xl text-xs font-semibold transition-all shadow-sm"
+              >
+                <span>เปิดแผนที่</span>
+                <svg class="w-3.5 h-3.5 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+            </div>
+
+          </div>
+        `;
+      }).join('');
+    }
+
+    /**
+     * Tab Navigation Switcher
+     */
+    function switchTab(tabName) {
+      const tabs = ['spots', 'expenses', 'flight'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tabBtn-' + t);
+        const content = document.getElementById('tabContent-' + t);
+        if (t === tabName) {
+          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 bg-white text-stone-900 shadow-sm font-bold';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900 font-medium text-stone-600';
+          content.classList.add('hidden');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * ========================================================================
+     * EXPENSE TRACKER LOGIC
+     * ========================================================================
+     */
+    function loadStoredExpenses() {
+      try {
+        const stored = localStorage.getItem('FUKUOKA_EXPENSES');
+        if (stored) {
+          expensesData = JSON.parse(stored);
+        } else {
+          expensesData = [];
+        }
+      } catch (e) {
+        expensesData = [];
+      }
+      renderExpenses();
+    }
+
+    function saveExpensesToStorage() {
+      try {
+        localStorage.setItem('FUKUOKA_EXPENSES', JSON.stringify(expensesData));
+      } catch (e) {}
+    }
+
+    function formatJpyInput(input) {
+      if (!input) return;
+      const cursor = input.selectionStart || 0;
+      const oldVal = input.value || '';
+
+      // Count digits before cursor to restore position
+      let digitsBeforeCursor = 0;
+      for (let i = 0; i < cursor; i++) {
+        if (/\d/.test(oldVal[i])) {
+          digitsBeforeCursor++;
+        }
+      }
+
+      // Filter only numeric digits
+      const rawDigits = oldVal.replace(/\D/g, '');
+      const thbInput = document.getElementById('expAmountTHB');
+
+      if (!rawDigits) {
+        input.value = '';
+        if (thbInput) thbInput.value = '';
+        return;
+      }
+
+      const num = parseInt(rawDigits, 10);
+      const formatted = num.toLocaleString('en-US');
+      input.value = formatted;
+
+      // Restore cursor position
+      let newCursor = formatted.length;
+      if (digitsBeforeCursor === 0) {
+        newCursor = 0;
+      } else {
+        let counted = 0;
+        for (let i = 0; i < formatted.length; i++) {
+          if (/\d/.test(formatted[i])) {
+            counted++;
+          }
+          if (counted === digitsBeforeCursor) {
+            newCursor = i + 1;
+            break;
+          }
+        }
+      }
+      try {
+        input.setSelectionRange(newCursor, newCursor);
+      } catch (e) {}
+
+      // Calculate and format THB with comma
+      if (thbInput) {
+        const thb = Math.round(num * exchangeRate);
+        thbInput.value = (num > 0 || rawDigits === '0') ? thb.toLocaleString('en-US') : '';
+      }
+    }
+
+    function setupJpyInputListeners() {
+      const jpyEl = document.getElementById('expAmountJPY');
+      if (!jpyEl) return;
+
+      jpyEl.addEventListener('keydown', function(e) {
+        if (this.selectionStart !== this.selectionEnd) return;
+
+        if (e.key === 'Backspace' && this.selectionStart > 1) {
+          if (this.value[this.selectionStart - 1] === ',') {
+            e.preventDefault();
+            const pos = this.selectionStart;
+            const val = this.value;
+            // Delete the digit preceding the comma
+            this.value = val.slice(0, pos - 2) + val.slice(pos - 1);
+            this.setSelectionRange(pos - 2, pos - 2);
+            formatJpyInput(this);
+          }
+        } else if (e.key === 'Delete' && this.selectionStart < this.value.length) {
+          if (this.value[this.selectionStart] === ',') {
+            e.preventDefault();
+            const pos = this.selectionStart;
+            const val = this.value;
+            // Delete comma and the digit succeeding it
+            this.value = val.slice(0, pos) + val.slice(pos + 2);
+            this.setSelectionRange(pos, pos);
+            formatJpyInput(this);
+          }
+        }
+      });
+    }
+
+    function handleAmountJpyChange(val) {
+      const inputEl = document.getElementById('expAmountJPY');
+      if (inputEl) {
+        if (val !== undefined && val !== null && typeof val !== 'object') {
+          inputEl.value = String(val);
+        }
+        formatJpyInput(inputEl);
+      }
+    }
+
+    function updateExchangeRate(newRate) {
+      const rate = parseFloat(newRate);
+      if (!isNaN(rate) && rate > 0) {
+        exchangeRate = rate;
+        const currentJpy = parseFloat((document.getElementById('expAmountJPY')?.value || '').replace(/,/g, '')) || 0;
+        const thbEl = document.getElementById('expAmountTHB');
+        if (thbEl) {
+          thbEl.value = currentJpy > 0 ? Math.round(currentJpy * exchangeRate).toLocaleString('en-US') : '';
+        }
+        renderExpenses();
+        showToast('อัปเดตอัตราแลกเปลี่ยนเป็น ' + rate + ' บาท/เยน');
+      }
+    }
+
+    let currentExpenseUserFilter = 'ALL';
+
+    function setExpenseUserFilter(person) {
+      currentExpenseUserFilter = person;
+      const tabs = ['ALL', 'Pi', 'Pung', 'All'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('expTab-' + t);
+        if (!btn) return;
+        if (t === person) {
+          btn.className = 'px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm';
+        } else {
+          btn.className = 'px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200';
+        }
+      });
+      renderExpenses();
+    }
+
+    function handleSaveExpense(event) {
+      event.preventDefault();
+      const title = document.getElementById('expTitle').value.trim();
+      const category = document.getElementById('expCategory').value;
+      const personEl = document.querySelector('input[name="expPerson"]:checked');
+      const person = personEl ? personEl.value : 'All';
+      const rawJpy = (document.getElementById('expAmountJPY')?.value || '').replace(/,/g, '').trim();
+      const rawThb = (document.getElementById('expAmountTHB')?.value || '').replace(/,/g, '').trim();
+      const amountJPY = parseFloat(rawJpy) || 0;
+      const amountTHB = parseFloat(rawThb) || Math.round(amountJPY * exchangeRate);
+      const date = document.getElementById('expDate').value;
+      const note = document.getElementById('expNote').value.trim();
+
+      if (!title || amountJPY <= 0) {
+        showToast('กรุณากรอกรายการและจำนวนเงินเยน');
+        return;
+      }
+
+      const expense = {
+        id: 'EXP-' + Date.now(),
+        date: date || new Date().toISOString().split('T')[0],
+        item: title,
+        category: category,
+        person: person, // 'Pi', 'Pung', 'All'
+        amountJPY: amountJPY,
+        amountTHB: amountTHB,
+        note: note
+      };
+
+      expensesData.unshift(expense);
+      saveExpensesToStorage();
+      renderExpenses();
+
+      // Reset form
+      document.getElementById('expTitle').value = '';
+      document.getElementById('expAmountJPY').value = '';
+      document.getElementById('expAmountTHB').value = '';
+      document.getElementById('expNote').value = '';
+
+      showToast(`บันทึกค่าใช้จ่าย (${person}) เรียบร้อย`);
+
+      // If GAS is available, persist to Google Sheet in background
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => console.log('Expense synced to Google Sheet'))
+          .withFailureHandler(err => console.warn('Could not sync expense to Sheet', err))
+          .addExpense(expense);
+      }
+    }
+
+    function deleteExpense(id) {
+      expensesData = expensesData.filter(e => e.id !== id);
+      saveExpensesToStorage();
+      renderExpenses();
+      showToast('ลบรายการเรียบร้อย');
+    }
+
+    function clearAllExpenses() {
+      if (confirm('คุณต้องการล้างประวัติค่าใช้จ่ายในเครื่องทั้งหมดใช่หรือไม่?')) {
+        expensesData = [];
+        saveExpensesToStorage();
+        renderExpenses();
+        showToast('ล้างประวัติค่าใช้จ่ายแล้ว');
+      }
+    }
+
+    function normalizeDateStr(dateStr) {
+      if (!dateStr) return 'ไม่ระบุวันที่';
+      if (typeof dateStr === 'string') {
+        const match = dateStr.match(/^\d{4}-\d{2}-\d{2}/);
+        if (match) return match[0];
+        const d = new Date(dateStr);
+        if (!isNaN(d.getTime())) {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        }
+      }
+      return String(dateStr).trim() || 'ไม่ระบุวันที่';
+    }
+
+    function formatThaiDateDisplay(dateStr, includePrefix) {
+      if (!dateStr || dateStr === 'ไม่ระบุวันที่') return 'ไม่ระบุวันที่';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+        if (!isNaN(d.getTime())) {
+          const dayNames = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+          const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+          
+          const now = new Date();
+          const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+          
+          const yest = new Date(now);
+          yest.setDate(yest.getDate() - 1);
+          const yestStr = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+          
+          let prefix = '';
+          if (dateStr === todayStr) {
+            prefix = '⚡ วันนี้ • ';
+          } else if (dateStr === yestStr) {
+            prefix = 'เมื่อวาน • ';
+          }
+          
+          const fullText = `วัน${dayNames[d.getDay()]}ที่ ${day} ${thaiMonths[month]} ${year}`;
+          return includePrefix && prefix ? `${prefix}${fullText}` : fullText;
+        }
+      }
+      return dateStr;
+    }
+
+    function renderExpenses() {
+      let totalJPY = 0;
+      let totalTHB = 0;
+      let piJPY = 0;
+      let piTHB = 0;
+      let pungJPY = 0;
+      let pungTHB = 0;
+      let allJPY = 0;
+      let allTHB = 0;
+
+      expensesData.forEach(e => {
+        const jpy = (e.amountJPY || 0);
+        const thb = (e.amountTHB || Math.round(jpy * exchangeRate));
+        totalJPY += jpy;
+        totalTHB += thb;
+
+        const p = e.person || 'All';
+        if (p === 'Pi') {
+          piJPY += jpy;
+          piTHB += thb;
+        } else if (p === 'Pung') {
+          pungJPY += jpy;
+          pungTHB += thb;
+        } else {
+          allJPY += jpy;
+          allTHB += thb;
+        }
+      });
+
+      document.getElementById('totalJpyDisplay').textContent = totalJPY.toLocaleString();
+      document.getElementById('totalThbDisplay').textContent = totalTHB.toLocaleString();
+      document.getElementById('expenseCountDisplay').textContent = expensesData.length;
+
+      // Update Per-Person breakdown elements
+      const elPiJpy = document.getElementById('totalPiJpy');
+      const elPiThb = document.getElementById('totalPiThb');
+      const elPungJpy = document.getElementById('totalPungJpy');
+      const elPungThb = document.getElementById('totalPungThb');
+      const elAllJpy = document.getElementById('totalAllJpy');
+      const elAllThb = document.getElementById('totalAllThb');
+
+      if (elPiJpy) elPiJpy.textContent = piJPY.toLocaleString();
+      if (elPiThb) elPiThb.textContent = piTHB.toLocaleString();
+      if (elPungJpy) elPungJpy.textContent = pungJPY.toLocaleString();
+      if (elPungThb) elPungThb.textContent = pungTHB.toLocaleString();
+      if (elAllJpy) elAllJpy.textContent = allJPY.toLocaleString();
+      if (elAllThb) elAllThb.textContent = allTHB.toLocaleString();
+
+      const listContainer = document.getElementById('expenseListContainer');
+      const emptyMsg = document.getElementById('noExpensesMessage');
+      const dailyOverview = document.getElementById('dailyOverviewContainer');
+      const grandTotalFooter = document.getElementById('tripGrandTotalFooter');
+      const daysBadge = document.getElementById('expenseDaysBadge');
+
+      let listToShow = expensesData;
+      if (currentExpenseUserFilter !== 'ALL') {
+        listToShow = expensesData.filter(e => (e.person || 'All') === currentExpenseUserFilter);
+      }
+
+      if (listToShow.length === 0) {
+        listContainer.innerHTML = '';
+        if (dailyOverview) dailyOverview.classList.add('hidden');
+        if (grandTotalFooter) grandTotalFooter.classList.add('hidden');
+        if (daysBadge) daysBadge.textContent = '0 วัน';
+        emptyMsg.classList.remove('hidden');
+        return;
+      }
+
+      emptyMsg.classList.add('hidden');
+
+      // Group expenses by Date
+      const dailyMap = {};
+      let filterTotalJPY = 0;
+      let filterTotalTHB = 0;
+
+      listToShow.forEach(e => {
+        const dateKey = normalizeDateStr(e.date);
+        if (!dailyMap[dateKey]) {
+          dailyMap[dateKey] = {
+            rawDate: dateKey,
+            items: [],
+            totalJPY: 0,
+            totalTHB: 0
+          };
+        }
+        const jpy = (e.amountJPY || 0);
+        const thb = (e.amountTHB || Math.round(jpy * exchangeRate));
+        dailyMap[dateKey].items.push(e);
+        dailyMap[dateKey].totalJPY += jpy;
+        dailyMap[dateKey].totalTHB += thb;
+        filterTotalJPY += jpy;
+        filterTotalTHB += thb;
+      });
+
+      // Sort dates descending (newest date first)
+      const sortedDates = Object.keys(dailyMap).sort((a, b) => b.localeCompare(a));
+
+      if (daysBadge) {
+        daysBadge.textContent = `${sortedDates.length} วัน • ${listToShow.length} รายการ`;
+      }
+
+      // 1. Render Daily Overview Mini Widget (if >= 2 days)
+      if (dailyOverview) {
+        if (sortedDates.length >= 2) {
+          const avgJPY = Math.round(filterTotalJPY / sortedDates.length);
+          const avgTHB = Math.round(filterTotalTHB / sortedDates.length);
+          dailyOverview.innerHTML = `
+            <div class="bg-gradient-to-r from-stone-50 via-amber-50/25 to-stone-50 rounded-xl p-3 border border-stone-200/80 space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-stone-800">
+                <span class="flex items-center space-x-1.5">
+                  <span>📊</span>
+                  <span>สรุปยอดแต่ละวัน (${sortedDates.length} วัน)</span>
+                </span>
+                <span class="text-[11px] font-normal text-stone-500">เฉลี่ย ¥${avgJPY.toLocaleString()}/วัน (~฿${avgTHB.toLocaleString()})</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                ${sortedDates.map(dKey => {
+                  const g = dailyMap[dKey];
+                  return `
+                    <div class="bg-white/95 px-3 py-2 rounded-lg border border-stone-200/70 flex items-center justify-between shadow-2xs">
+                      <div class="flex items-center space-x-2">
+                        <span class="text-xs">📅</span>
+                        <div>
+                          <div class="font-bold text-stone-800 text-[11px]">${formatThaiDateDisplay(dKey, false)}</div>
+                          <div class="text-[10px] text-stone-500">${g.items.length} รายการ</div>
+                        </div>
+                      </div>
+                      <div class="text-right">
+                        <div class="font-bold font-mono text-stone-900 text-xs">¥${g.totalJPY.toLocaleString()}</div>
+                        <div class="text-[10px] font-mono text-amber-700">฿${g.totalTHB.toLocaleString()}</div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          `;
+          dailyOverview.classList.remove('hidden');
+        } else {
+          dailyOverview.classList.add('hidden');
+        }
+      }
+
+      // 2. Render Daily Groups with Expenses List and Daily Totals
+      listContainer.innerHTML = sortedDates.map(dKey => {
+        const g = dailyMap[dKey];
+        return `
+          <div class="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-2xs space-y-0">
+            <!-- Daily Header with Total -->
+            <div class="bg-stone-50/95 px-3.5 py-2.5 border-b border-stone-200/80 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-md bg-stone-900 text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                  📅
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-stone-900">
+                    ${formatThaiDateDisplay(dKey, true)}
+                  </div>
+                  <div class="text-[10px] text-stone-500 font-medium">
+                    ${g.items.length} รายการ
+                  </div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] uppercase font-bold text-stone-500 tracking-wider">Total ประจำวัน</div>
+                <div class="text-xs font-black font-mono text-stone-900">
+                  ¥${g.totalJPY.toLocaleString()}
+                  <span class="text-[10px] font-bold font-mono text-amber-700 ml-1">(฿${g.totalTHB.toLocaleString()})</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- List of items on this day -->
+            <div class="divide-y divide-stone-100 px-3.5">
+              ${g.items.map(e => {
+                const p = e.person || 'All';
+                let personBadge = '';
+                if (p === 'Pi') {
+                  personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">👤 Pi</span>';
+                } else if (p === 'Pung') {
+                  personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60">👤 Pung</span>';
+                } else {
+                  personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">👥 All</span>';
+                }
+
+                return `
+                  <div class="py-2.5 flex items-center justify-between text-xs">
+                    <div class="space-y-0.5 pr-2">
+                      <div class="flex items-center space-x-1.5 flex-wrap">
+                        <span class="font-bold text-stone-900">${escapeHtml(e.item)}</span>
+                        ${personBadge}
+                      </div>
+                      <div class="text-[11px] text-stone-500 flex items-center space-x-1.5 flex-wrap">
+                        <span class="text-stone-600 font-medium">${escapeHtml(e.category || '')}</span>
+                        ${e.note ? `<span>•</span><span class="text-stone-400 italic">${escapeHtml(e.note)}</span>` : ''}
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2.5 shrink-0">
+                      <div class="text-right">
+                        <div class="font-bold font-mono text-stone-900">¥${(e.amountJPY || 0).toLocaleString()}</div>
+                        <div class="text-[10px] text-stone-500 font-mono">฿${(e.amountTHB || Math.round((e.amountJPY || 0) * exchangeRate)).toLocaleString()}</div>
+                      </div>
+                      <button onclick="deleteExpense('${e.id}')" class="text-stone-300 hover:text-red-500 p-1 transition-colors" title="ลบรายการ">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 3. Render Trip Grand Total Summary Card
+      if (grandTotalFooter) {
+        const filterTitle = currentExpenseUserFilter === 'ALL' 
+          ? 'ทุกรายการ' 
+          : (currentExpenseUserFilter === 'Pi' ? 'เฉพาะ Pi' : (currentExpenseUserFilter === 'Pung' ? 'เฉพาะ Pung' : 'เฉพาะกองกลาง'));
+
+        grandTotalFooter.innerHTML = `
+          <div class="bg-gradient-to-br from-stone-900 via-stone-850 to-stone-800 text-white rounded-2xl p-4 border border-stone-700/80 shadow-md space-y-3.5">
+            <div class="flex items-center justify-between border-b border-stone-700/70 pb-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-lg">🏆</span>
+                <div>
+                  <h4 class="text-xs font-black text-amber-400 uppercase tracking-wider">Grand Total ประจำ Trip</h4>
+                  <p class="text-[10px] text-stone-400">สรุปยอดรวมค่าใช้จ่ายทั้งหมดตลอดการเดินทาง (${filterTitle})</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full">
+                  ${sortedDates.length} วัน • ${listToShow.length} รายการ
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-baseline justify-between pt-0.5">
+              <div>
+                <span class="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Grand Total ทั้งสิ้น (เยน)</span>
+                <div class="text-2xl font-black font-mono text-white tracking-tight">¥${filterTotalJPY.toLocaleString()}</div>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-stone-400 uppercase font-bold tracking-wider">คิดเป็นเงินบาท (THB)</span>
+                <div class="text-xl font-bold font-mono text-amber-400">฿${filterTotalTHB.toLocaleString()}</div>
+              </div>
+            </div>
+
+            ${sortedDates.length > 0 ? `
+              <div class="text-[11px] text-stone-300 bg-stone-800/90 rounded-xl px-3 py-2 flex items-center justify-between border border-stone-700/60">
+                <span class="text-stone-400 font-medium">ค่าเฉลี่ยต่อวัน:</span>
+                <span class="font-bold font-mono text-white">¥${Math.round(filterTotalJPY / sortedDates.length).toLocaleString()} / วัน <span class="text-amber-400 font-normal">(฿${Math.round(filterTotalTHB / sortedDates.length).toLocaleString()})</span></span>
+              </div>
+            ` : ''}
+
+            <!-- Breakdown by person -->
+            <div class="space-y-1.5 pt-1 border-t border-stone-700/70">
+              <div class="text-[10px] font-bold uppercase text-stone-400 tracking-wider">ยอดรวมแยกตามคนจ่ายในทริป</div>
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-stone-800/80 rounded-xl p-2 border border-stone-700/50">
+                  <div class="text-[10px] text-indigo-300 font-bold">👤 Pi</div>
+                  <div class="text-xs font-bold font-mono text-white mt-0.5">¥${piJPY.toLocaleString()}</div>
+                  <div class="text-[10px] text-stone-400 font-mono">฿${piTHB.toLocaleString()}</div>
+                </div>
+                <div class="bg-stone-800/80 rounded-xl p-2 border border-stone-700/50">
+                  <div class="text-[10px] text-rose-300 font-bold">👤 Pung</div>
+                  <div class="text-xs font-bold font-mono text-white mt-0.5">¥${pungJPY.toLocaleString()}</div>
+                  <div class="text-[10px] text-stone-400 font-mono">฿${pungTHB.toLocaleString()}</div>
+                </div>
+                <div class="bg-stone-800/80 rounded-xl p-2 border border-stone-700/50">
+                  <div class="text-[10px] text-emerald-300 font-bold">👥 กองกลาง</div>
+                  <div class="text-xs font-bold font-mono text-white mt-0.5">¥${allJPY.toLocaleString()}</div>
+                  <div class="text-[10px] text-stone-400 font-mono">฿${allTHB.toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        grandTotalFooter.classList.remove('hidden');
+      }
+    }
+
+    /**
+     * ========================================================================
+     * FLIGHT DATA & COUNTDOWN LOGIC
+     * ========================================================================
+     */
+    function loadFlightData() {
+      try {
+        const stored = localStorage.getItem('FUKUOKA_FLIGHT_DATA');
+        if (stored) {
+          const f = JSON.parse(stored);
+          applyFlightToUI(f);
+        }
+      } catch (e) {}
+    }
+
+    function applyFlightToUI(f) {
+      if (f.airline) document.getElementById('flightAirlineDisplay').textContent = f.airline;
+      if (f.flightNo) document.getElementById('flightNumberDisplay').textContent = f.flightNo;
+      if (f.date) document.getElementById('flightDateDisplay').textContent = f.date;
+      if (f.time) document.getElementById('flightTimeDisplay').textContent = f.time + ' น.';
+      
+      document.getElementById('editAirline').value = f.airline || 'Thai AirAsia';
+      document.getElementById('editFlightNo').value = f.flightNo || 'FD737';
+      document.getElementById('editFlightDate').value = f.date || '2026-10-15';
+      document.getElementById('editFlightTime').value = f.time || '11:55';
+    }
+
+    function toggleFlightEdit() {
+      const form = document.getElementById('flightEditForm');
+      form.classList.toggle('hidden');
+    }
+
+    function saveFlightEdit() {
+      const flight = {
+        airline: document.getElementById('editAirline').value.trim(),
+        flightNo: document.getElementById('editFlightNo').value.trim(),
+        date: document.getElementById('editFlightDate').value,
+        time: document.getElementById('editFlightTime').value
+      };
+
+      try {
+        localStorage.setItem('FUKUOKA_FLIGHT_DATA', JSON.stringify(flight));
+      } catch (e) {}
+
+      applyFlightToUI(flight);
+      toggleFlightEdit();
+      showToast('บันทึกข้อมูลเที่ยวบินขากลับแล้ว');
+    }
+
+    /**
+     * Toast Utility
+     */
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2500);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    /**
+     * ========================================================================
+     * EMBEDDED CURATED SPOTS FALLBACK (122 spots from Google Sheets)
+     * ========================================================================
+     */
+    function loadFallbackData() {
+      // Direct raw data fallback parsed from the PI_Japan_list sheet
+      spotsData = [
+        {"id":1,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"GAP","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=GAP%20Canal%20City%20Fukuoka"},
+        {"id":2,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Alpen","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Alpen%20Canal%20City%20Fukuoka"},
+        {"id":3,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Rage Blue","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Rage%20Blue%20Canal%20City%20Fukuoka"},
+        {"id":4,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Murasaki Sport","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Murasaki%20Sport%20Canal%20City%20Fukuoka"},
+        {"id":5,"flag":"","rating":7,"type":"Shopping","station":"Canal City","shop":"Wego","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Wego%20Canal%20City%20Fukuoka"},
+        {"id":6,"flag":"**","rating":8,"type":"แผงลอย","station":"Canal City","shop":"Nakasu Food Stalls Street","location":"แผงลอยแถว Canal city","desc":"แผงลอยริมแม่น้ำนาคาสุ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Nakasu%20Food%20Stalls%20Street%20Canal%20City%20Fukuoka"},
+        {"id":7,"flag":"","rating":7,"type":"Coffee","station":"canal Kushida Shrine Station","shop":"Fuk Coffee","location":"","desc":"กาแฟชื่อดังใกล้ Kushida Shrine","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Fuk%20Coffee%20Kushida%20Shrine%20Fukuoka"},
+        {"id":8,"flag":"**","rating":7,"type":"Sushi","station":"Daimyo","shop":"Hyotan Sushi","location":"ริมถนน Fukuokaeki ST 1 แถว daimyo","desc":"ร้านซูชิยอดนิยม คิวยาวแต่คุ้มค่า","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Hyotan%20Sushi%20Daimyo%20Fukuoka"},
+        {"id":9,"flag":"","rating":6,"type":"Sushi","station":"Daimyo","shop":"Hyotan Sushi","location":"B2 Solaria Stage","desc":"สายพาน ชั้นใต้ดิน Solaria Stage","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Hyotan%20Sushi%20B2%20Solaria%20Stage%20Fukuoka"},
+        {"id":10,"flag":"**","rating":8,"type":"Shopping","station":"Daimyo","shop":"DIOR Fukuoka Iwataya","location":"Iwataya","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=DIOR%20Fukuoka%20Iwataya%20Daimyo%20Fukuoka"},
+        {"id":11,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"nanamica FUKUOKA","location":"","desc":"แฟชั่นสตรีทแวร์ The North Face Purple Label","mapsUrl":"https://www.google.com/maps/search/?api=1&query=nanamica%20FUKUOKA%20Daimyo%20Fukuoka"},
+        {"id":12,"flag":"","rating":7,"type":"ramen","station":"Daimyo","shop":"Gyoza & Ramen Danbo","location":"","desc":"ราเมนดันโบะ ราเมนซุปกระดูกหมูเข้มข้น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Gyoza%20%26%20Ramen%20Danbo%20Daimyo%20Fukuoka"},
+        {"id":13,"flag":"*","rating":8,"type":"Coffee","station":"Daimyo","shop":"Little Stand Daimyo store","location":"","desc":"ร้านกาแฟสไตล์มินิมอล","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Little%20Stand%20Daimyo%20store%20Daimyo%20Fukuoka"},
+        {"id":14,"flag":"*","rating":7,"type":"sushi","station":"Daimyo","shop":"KURODAHAN","location":"แถวไดเมียว","desc":"ข้าวหน้าทะเล เน้นมากุโระ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=KURODAHAN%20Daimyo%20Fukuoka"},
+        {"id":15,"flag":"*","rating":7,"type":"Tempura","station":"Daimyo","shop":"Tempura Hirao","location":"Daimyo","desc":"เทมปุระทอดสดร้อนๆ ชิ้นต่อชิ้น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Tempura%20Hirao%20Daimyo%20Fukuoka"},
+        {"id":16,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"H&M","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=H%26M%20Daimyo%20Fukuoka"},
+        {"id":17,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"Bingo Bongo","location":"","desc":"ร้านเสื้อผ้าวินเทจ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Bingo%20Bongo%20Daimyo%20Fukuoka"},
+        {"id":18,"flag":"","rating":7,"type":"Shopping","station":"Daimyo","shop":"Hare","location":"","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Hare%20Daimyo%20Fukuoka"},
+        {"id":19,"flag":"","rating":7,"type":"sushi ริมทะเล","station":"Fukuoka","shop":"Itoshima Seafood Restaurant Futamigaura","location":"Itoshima","desc":"ร้านอาหารทะเลวิวริมทะเลอิโตชิมะ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Itoshima%20Seafood%20Restaurant%20Futamigaura%20Fukuoka"},
+        {"id":20,"flag":"**","rating":8,"type":"เนื้อแฮมเบิรก","station":"hakata","shop":"Kiwamiya","location":"ข้างสถานี Hakata","desc":"แฮมเบิร์กเนื้อกระทะร้อนชื่อดัง ย่างเองบนหินร้อน","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Kiwamiya%20hakata%20Fukuoka"},
+        {"id":21,"flag":"*","rating":8,"type":"Shopping","station":"hakata","shop":"FREAK'S STORE","location":"AMU Plaza Hakata City","desc":"สตรีทแวร์และแบรนด์ดังในห้าง AMU","mapsUrl":"https://www.google.com/maps/search/?api=1&query=FREAK%27S%20STORE%20AMU%20Plaza%20Hakata%20City%20Fukuoka"},
+        {"id":22,"flag":"**","rating":8,"type":"Ramen","station":"hakata","shop":"Shin shin","location":"Hakata Deitos","desc":"ราเมนชินชิน เส้นเหนียวนุ่ม ซุปกลมกล่อม ต้องลอง","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Shin%20shin%20hakata%20Fukuoka"},
+        {"id":23,"flag":"","rating":7,"type":"Sushi","station":"hakata","shop":"Sushi Sakaba Sashisu (KITTE Hakata)","location":"KITTE Hakata B1","desc":"อิซากายะซูชิยอดนิยม คิวยาว เมนูข้าวหน้าล้น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Sushi%20Sakaba%20Sashisu%20KITTE%20Hakata%20Fukuoka"},
+        {"id":24,"flag":"","rating":7,"type":"super market","station":"hakata","shop":"Lopia","location":"Yodobashi Hakata 4F","desc":"ซูเปอร์มาร์เก็ตอาหารและของกินราคาประหยัดของเยอะมาก","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Lopia%20Yodobashi%20Hakata%20Fukuoka"},
+        {"id":25,"flag":"","rating":7,"type":"Shopping","station":"hakata","shop":"Uniqlo GU","location":"Amu Plaza / Canal City","desc":"","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Uniqlo%20GU%20hakata%20Fukuoka"},
+        {"id":26,"flag":"**","rating":7,"type":"ข้าวเนื้อย่าง","station":"hakata","shop":"Musashi -wagyu","location":"ฮากาตะ","desc":"ข้าวเนื้อย่างวากิวพรีเมียม","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Musashi%20-wagyu%20hakata%20Fukuoka"},
+        {"id":27,"flag":"","rating":7,"type":"Coffee","station":"hakata","shop":"Komeda's Coffee Hakata Station Higashi","location":"Hakata Station Higashi","desc":"กาแฟโบราณและโทสต์อาหารเช้า","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Komeda%27s%20Coffee%20Hakata%20Station%20Higashi%20Fukuoka"},
+        {"id":28,"flag":"","rating":7,"type":"ขนม","station":"hakata","shop":"Mon cher","location":"Hakata Hankyu","desc":"โรลเค้กครีมสดโดจิมะโรล","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Mon%20cher%20hakata%20Fukuoka"},
+        {"id":29,"flag":"Pi","rating":7,"type":"Shopping","station":"hakata","shop":"TiC TAC","location":"Amu Plaza","desc":"ร้านนาฬิกาแบรนด์เนมและวินเทจ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=TiC%20TAC%20hakata%20Fukuoka"},
+        {"id":30,"flag":"**","rating":7,"type":"เนื้อย่าง Yakiniku","station":"hakata","shop":"Yakiniku Champion","location":"JR Hakata City 10F","desc":"ยากินิคุเนื้อเกรดพรีเมียม","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Yakiniku%20Champion%20hakata%20Fukuoka"},
+        {"id":31,"flag":"","rating":7,"type":"เนื้อย่าง Yakiniku","station":"hakata","shop":"Jojoen Kitte","location":"KITTE Hakata 10F","desc":"โจโจเอ็น ปิ้งย่างชื่อดังวิวเมืองสวย","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Jojoen%20Kitte%20hakata%20Fukuoka"},
+        {"id":32,"flag":"**","rating":7,"type":"ครัวซอง","station":"hakata","shop":"il FORNO del MIGNON","location":"ในสถานี Hakata Station ทางออกกลาง","desc":"มินิครัวซองต์อบร้อน หอมเนย คิวยาวตลอดทั้งวัน","mapsUrl":"https://www.google.com/maps/search/?api=1&query=il%20FORNO%20del%20MIGNON%20hakata%20Fukuoka"},
+        {"id":33,"flag":"","rating":7,"type":"Shopping","station":"hakata","shop":"Tokyu Hands","location":"JR Hakata City","desc":"ของใช้ เครื่องเขียน และของขวัญ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Tokyu%20Hands%20hakata%20Fukuoka"},
+        {"id":34,"flag":"*","rating":7,"type":"ร้านขนมปัง","station":"hakata","shop":"Dacomecca","location":"ใกล้สถานี Hakata ทางออก Hakata-guchi","desc":"เบเกอรี่และแซนด์วิชไส้แน่นสุดฮิต","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Dacomecca%20hakata%20Fukuoka"},
+        {"id":35,"flag":"*","rating":8,"type":"ปลาไหล","station":"hakata","shop":"Yoshizuka Unagiya","location":"Nakasu","desc":"ข้าวหน้าปลาไหลย่างเตาถ่านเก่าแก่กว่า 140 ปี","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Yoshizuka%20Unagiya%20Nakasu%20Fukuoka"},
+        {"id":36,"flag":"*","rating":7,"type":"วัด","station":"hakata","shop":"Tōchō-ji","location":"Gion","desc":"วัดโทโชจิ สักการะพระพุทธรูปไม้แกะสลักองค์ใหญ่","mapsUrl":"https://www.google.com/maps/search/?api=1&query=T%C5%8Dch%C5%8D-ji%20hakata%20Fukuoka"},
+        {"id":37,"flag":"*","rating":7,"type":"Udon เมนไทโกะ","station":"hakata","shop":"Mentaiju Ganso Hakata","location":"Nishinakasu","desc":"ข้าวหน้าเมนไทโกะและอุด้งซอสเมนไทโกะเข้มข้น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Mentaiju%20Ganso%20Hakata%20hakata%20Fukuoka"},
+        {"id":38,"flag":"","rating":7,"type":"ขนมของฝาก","station":"hakata","shop":"Fukutaro Hakata Station","location":"Deitos Hakata","desc":"แครกเกอร์เมนเบะ (Menbei) และเมนไทโกะ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Fukutaro%20Hakata%20Station%20hakata%20Fukuoka"},
+        {"id":39,"flag":"*","rating":7,"type":"shabu","station":"hakata","shop":"Kisoji Hakata Ekimae","location":"Hakata Ekimae","desc":"ชาบูชาบูและสุกียากี้เนื้อวากิว","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Kisoji%20Hakata%20Ekimae%20hakata%20Fukuoka"},
+        {"id":40,"flag":"**","rating":8,"type":"ลิ้นย่าง","station":"hakata","shop":"Tanya Hakata","location":"Hakata 1 Ban-gai (B1)","desc":"ชุดอาหารเช้าลิ้นวัวย่างเตาถ่าน เสิร์ฟพร้อมข้าวและซุป","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Tanya%20Hakata%20Hakata%201%20Ban-gai%20Fukuoka"},
+        {"id":41,"flag":"**","rating":8,"type":"Shopping","station":"Tenjin","shop":"Parco Tenjin","location":"Tenjin","desc":"ห้างรวมแฟชั่น ช็อปอนิเมะ และของแต่งบ้าน","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Parco%20Tenjin%20Tenjin%20Fukuoka"},
+        {"id":42,"flag":"**","rating":8,"type":"Shopping","station":"Tenjin","shop":"Daimaru Fukuoka Tenjin","location":"Tenjin","desc":"ห้างไดมารู แบรนด์เนมและโซนอาหารชั้นใต้ดิน","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Daimaru%20Fukuoka%20Tenjin%20Tenjin%20Fukuoka"},
+        {"id":43,"flag":"*","rating":8,"type":"Shopping","station":"Tenjin","shop":"Tenjin Underground Shopping Mall","location":"Tenjin Chikagai","desc":"ถนนคนเดินใต้ดินเทนจิน เชื่อมต่อสถานีใต้ดิน ยาวกว่า 600 เมตร","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Tenjin%20Underground%20Shopping%20Mall%20Tenjin%20Fukuoka"},
+        {"id":44,"flag":"*","rating":8,"type":"Coffee","station":"Tenjin","shop":"REC COFFEE Tenjin Minami","location":"Tenjin Minami","desc":"กาแฟสเปเชียลตี้ระดับแชมป์บาริสต้าญี่ปุ่น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=REC%20COFFEE%20Tenjin%20Minami%20Tenjin%20Fukuoka"},
+        {"id":45,"flag":"**","rating":8,"type":"Ramen","station":"Tenjin","shop":"Ichiran Ramen Main Branch","location":"Nakasu","desc":"อิชิรัน ราเมนข้อสอบ สาขาหลักตึกสูง 12 ชั้น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Ichiran%20Ramen%20Main%20Branch%20Nakasu%20Fukuoka"},
+        {"id":46,"flag":"*","rating":8,"type":"Shopping","station":"LALAport","shop":"Mitsui Shopping Park LaLaport Fukuoka","location":"Takeshita Station","desc":"หุ่นยนต์กันดั้มยักษ์ RX-93ff Nu Gundam ขนาด 1:1","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Mitsui%20Shopping%20Park%20LaLaport%20Fukuoka%20LALAport%20Fukuoka"},
+        {"id":47,"flag":"*","rating":8,"type":"สวน","station":"Ohoripark","shop":"Ohori Park","location":"Ohorikoen Station","desc":"สวนสาธารณะโอโฮริ ทะเลสาบขนาดใหญ่ บรรยากาศร่มรื่น","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Ohori%20Park%20Ohoripark%20Fukuoka"},
+        {"id":48,"flag":"","rating":7,"type":"Coffee","station":"Ohoripark","shop":"Starbucks Ohori Park","location":"Ohori Park","desc":"สตาร์บัคส์ริมทะเลสาบดีไซน์กลมกลืนธรรมชาติ","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Starbucks%20Ohori%20Park%20Ohoripark%20Fukuoka"},
+        {"id":49,"flag":"**","rating":8,"type":"Yatai","station":"Tenjin","shop":"Yatai Rembrant & Kaji","location":"หน้าธนาคาร Bank of Fukuoka Tenjin","desc":"ซุ้มแผงลอยสไตล์โมเดิร์น เมนูเทมปุระและราเมน","mapsUrl":"https://www.google.com/maps/search/?api=1&query=Yatai%20Tenjin%20Fukuoka"}
+      ];
+
+      // Extract unique stations & types
+      const stations = [...new Set(spotsData.map(s => s.station).filter(Boolean))].sort();
+      const types = [...new Set(spotsData.map(s => s.type).filter(Boolean))].sort();
+
+      populateDropdowns(stations, types);
+      applyFilters();
+    }
+  </script>
+</body>
+</html>

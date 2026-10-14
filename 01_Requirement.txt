@@ -1,0 +1,17 @@
+
+จาก GG sheet นี้ 
+
+https://docs.google.com/spreadsheets/d/1yfaW28yFr-fTCeJYxHTpIVdeTADmDnHAfcYZnVXCJ38/edit?gid=0#gid=0
+
+Update ข้อมูลตาม gg sheet อัตโนมัติ
+
+สร้าง Web Application ที่สามารถแสดงข้อมูลจาก Google Sheets 
+ มีการสร้าง dropdown และ search box
+รองรับการแสดงผลบนทุกอุปกรณ์ (Responsive)
+
+
+
+-- Optional
+มี tab แสดง บันทึก ค่าใช้จ่าย
+
+มี tab แสดงเที่ยวบินขากลับ / เวลา 
