@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <!-- Viewport รองรับมือถือเต็มจอ, Dynamic Viewport Height (100dvh) และ viewport-fit=cover สำหรับติ่งหน้าจอ/ขอบมน -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <title>Pung_Pi_Fukuoka_Travel</title>
+  
+  <!-- Web App & Theme Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pung_Pi_Fukuoka_Travel">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FAF8F5">
+
+  <style>
+    :root {
+      /* ปรับเป็น 0px เพื่อให้ Header ของแอปพลิเคชันแสดงผลเต็มรูปแบบ */
+      --gas-banner-height: 0px;
+      --bg-color: #FAF8F5;
+      --primary-color: #D9381E;
+      --text-color: #1A2332;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      /* Fallback 100vh สำหรับเบราว์เซอร์เก่า และ 100dvh ป้องกัน Address Bar มือถือบัง */
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Container ครอบเพื่อ clip แถบแจ้งเตือนด้านบนออก */
+    .app-viewport {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Iframe เต็มจอ ไร้ขอบ ไร้ scrollbar ของตัว wrapper */
+    #gas-frame {
+      position: absolute;
+      top: calc(-1 * var(--gas-banner-height));
+      left: 0;
+      width: 100%;
+      /* ขยายความสูงชดเชยส่วนที่ถูกดันขึ้นไปด้านบน */
+      height: calc(100% + var(--gas-banner-height));
+      border: none;
+      outline: none;
+      display: block;
+      background-color: var(--bg-color);
+    }
+
+    /* Loading Screen */
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+      pointer-events: auto;
+    }
+
+    .loading-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    /* วงล้อหมุนสไตล์มินิมอล */
+    .spinner-ring {
+      width: 48px;
+      height: 48px;
+      border: 3.5px solid rgba(217, 56, 30, 0.15);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 0.85s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+      margin-bottom: 20px;
+    }
+
+    .app-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-color);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .app-subtitle {
+      font-size: 0.85rem;
+      color: #6B7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 3px;
+    }
+
+    .loading-dots span {
+      width: 4px;
+      height: 4px;
+      background-color: #6B7280;
+      border-radius: 50%;
+      animation: pulse-dot 1.2s infinite ease-in-out;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse-dot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1.1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loader-content">
+      <div class="spinner-ring"></div>
+      <div class="app-title">Pung_Pi_Fukuoka_Travel</div>
+      <div class="app-subtitle">
+        กำลังโหลดข้อมูล
+        <span class="loading-dots">
+          <span></span><span></span><span></span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viewport ครอบ Iframe -->
+  <div class="app-viewport">
+    <iframe
+      id="gas-frame"
+      allow="fullscreen; geolocation; camera; microphone; clipboard-read; clipboard-write"
+      allowfullscreen
+      loading="eager"
+      title="Pung_Pi_Fukuoka_Travel">
+    </iframe>
+  </div>
+
+  <script>
+    (function() {
+      // --------------------------------------------------------------------------
+      // ตั้งค่า URL ของ Google Apps Script Web App ของคุณที่นี่
+      // --------------------------------------------------------------------------
+      const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbylVeS2zm5LkRvxbroMO7fZxlqDeV7bytD5LG_iBVsQubguMvGhkiJpRFiRmEJN8TzTeQ/exec";
+
+      const iframe = document.getElementById('gas-frame');
+      const loader = document.getElementById('loading-screen');
+
+      // ส่งต่อ Query Parameters และ Hash ไปยัง iframe (เช่น ?tab=expenses)
+      let targetUrl = GAS_WEB_APP_URL;
+      const search = window.location.search;
+      const hash = window.location.hash;
+
+      if (search) {
+        targetUrl += (targetUrl.includes('?') ? '&' : '?') + search.substring(1);
+      }
+      if (hash) {
+        targetUrl += hash;
+      }
+
+      // โหลด Web App
+      iframe.src = targetUrl;
+
+      // จัดการ Fade Out Loading Screen เมื่อ iframe โหลดเสร็จ
+      let isLoaded = false;
+      function dismissLoader() {
+        if (isLoaded) return;
+        isLoaded = true;
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 450);
+      }
+
+      iframe.addEventListener('load', dismissLoader);
+
+      // สำรอง: กรณีเน็ตช้าหรือ iframe โหลดเสร็จก่อน event listener เริ่มทำงาน
+      // ป้องกันหน้าต่าง loading ค้างไม่เกิน 8 วินาที
+      setTimeout(dismissLoader, 8000);
+    })();
+  </script>
+</body>
+</html>
