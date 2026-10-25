@@ -101,28 +101,36 @@
 
     <!-- Navigation Tabs (Segmented Control) -->
     <div class="max-w-4xl mx-auto px-4 pb-2.5 pt-1">
-      <div class="grid grid-cols-3 p-1 bg-stone-200/70 rounded-xl text-xs font-semibold text-stone-600">
-        <button onclick="switchTab('spots')" id="tabBtn-spots" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 bg-white text-stone-900 shadow-sm font-bold">
-          <svg class="w-4 h-4 text-brand-vermilion" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="grid grid-cols-4 p-1 bg-stone-200/70 rounded-xl text-xs font-semibold text-stone-600">
+        <button onclick="switchTab('spots')" id="tabBtn-spots" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 bg-white text-stone-900 shadow-sm font-bold">
+          <svg class="w-3.5 h-3.5 text-brand-vermilion shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
-          <span>จุดเช็คอิน</span>
-          <span id="tabCountBadge" class="ml-1 px-1.5 py-0.2 bg-stone-100 text-stone-600 rounded-full text-[10px] font-medium">0</span>
+          <span class="truncate">เช็คอิน</span>
+          <span id="tabCountBadge" class="hidden sm:inline-block ml-0.5 px-1 py-0.2 bg-stone-100 text-stone-600 rounded-full text-[9px] font-medium">0</span>
         </button>
 
-        <button onclick="switchTab('expenses')" id="tabBtn-expenses" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onclick="switchTab('expenses')" id="tabBtn-expenses" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 hover:text-stone-900 font-medium text-stone-600">
+          <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <span>บันทึกค่าใช้จ่าย</span>
+          <span class="truncate">ค่าใช้จ่าย</span>
         </button>
 
-        <button onclick="switchTab('flight')" id="tabBtn-flight" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900">
-          <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button onclick="switchTab('taxRefund')" id="tabBtn-taxRefund" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 hover:text-stone-900 font-medium text-stone-600">
+          <svg class="w-3.5 h-3.5 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+          </svg>
+          <span class="truncate">Tax Refund</span>
+          <span id="tabTaxCountBadge" class="hidden ml-0.5 px-1.5 py-0.2 bg-amber-100 text-amber-900 rounded-full text-[9px] font-bold">0</span>
+        </button>
+
+        <button onclick="switchTab('flight')" id="tabBtn-flight" class="py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 hover:text-stone-900 font-medium text-stone-600">
+          <svg class="w-3.5 h-3.5 text-sky-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
           </svg>
-          <span>เที่ยวบินขากลับ</span>
+          <span class="truncate">เที่ยวบิน</span>
         </button>
       </div>
     </div>
@@ -441,6 +449,25 @@
             >
           </div>
 
+          <!-- Tax Refund Selector -->
+          <div>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">การทำ Tax Refund (ขอคืนภาษีนักท่องเที่ยว)</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label class="cursor-pointer">
+                <input type="radio" name="expTaxRefund" id="expTaxRefundNo" value="no" checked class="peer sr-only">
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-stone-800 transition-all flex items-center justify-center space-x-1 border border-stone-200 peer-checked:border-stone-800">
+                  <span class="text-xs font-semibold text-stone-700 peer-checked:text-white">⚪ ไม่ทำ Tax Refund</span>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="expTaxRefund" id="expTaxRefundYes" value="yes" class="peer sr-only">
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-emerald-600 transition-all flex items-center justify-center space-x-1 border border-stone-200 peer-checked:border-emerald-600">
+                  <span class="text-xs font-bold text-stone-700 peer-checked:text-white">🏷️ ทำ Tax Refund</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <button 
             type="submit" 
             id="saveExpBtn" 
@@ -501,7 +528,139 @@
     </section>
 
     <!-- ===================================================================== -->
-    <!-- TAB 3: FLIGHT SCHEDULE & DEPARTURE -->
+    <!-- TAB 3: TAX REFUND DASHBOARD -->
+    <!-- ===================================================================== -->
+    <section id="tabContent-taxRefund" class="hidden space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <div>
+          <h2 class="text-lg font-bold text-stone-900 tracking-tight flex items-center space-x-1.5">
+            <span>🏷️ สรุปรายการ Tax Refund</span>
+          </h2>
+          <span class="text-xs text-stone-500 font-medium">คำนวณเงินคืนภาษีนักท่องเที่ยวในญี่ปุ่น</span>
+        </div>
+        <div class="flex items-center space-x-1 bg-stone-100 p-1 rounded-xl text-[11px] font-semibold border border-stone-200/80">
+          <span class="text-stone-500 px-1 text-[10px]">อัตราคืน:</span>
+          <button type="button" onclick="setTaxRefundRate(0.10)" id="taxRateBtn-10" class="px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-400 text-stone-900 shadow-2xs">
+            10%
+          </button>
+          <button type="button" onclick="setTaxRefundRate(0.0845)" id="taxRateBtn-845" class="px-2 py-0.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900">
+            8.45%
+          </button>
+        </div>
+      </div>
+
+      <!-- Tax Refund Overview Hero Card -->
+      <div class="bg-gradient-to-br from-stone-900 via-stone-850 to-stone-800 text-white rounded-2xl p-5 shadow-sm space-y-4 border border-stone-700/60">
+        <div class="flex items-center justify-between border-b border-stone-700/60 pb-3">
+          <div>
+            <div class="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold uppercase tracking-wider mb-0.5">
+              <span>🏷️</span>
+              <span>ยอดเงินคืนภาษีรวม (Est. Refund)</span>
+            </div>
+            <div class="text-2xl font-black tracking-tight text-white mt-0.5 flex items-baseline space-x-1">
+              <span>+¥</span><span id="taxTotalRefundJpy">0</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-stone-400 font-medium">คิดเป็นเงินบาท (THB)</span>
+            <div class="text-xl font-bold text-emerald-400 mt-0.5">
+              +฿<span id="taxTotalRefundThb">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Total Info Row -->
+        <div class="flex items-center justify-between text-xs text-stone-300 bg-stone-800/70 p-2.5 rounded-xl border border-stone-700/40">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-stone-400">🛍️ ยอดซื้อปลอดภาษีรวม:</span>
+            <span class="font-bold font-mono text-white text-xs">¥<span id="taxTotalPurchasesJpy">0</span></span>
+            <span class="text-[11px] text-stone-400 font-mono">(฿<span id="taxTotalPurchasesThb">0</span>)</span>
+          </div>
+          <div class="text-amber-300 font-medium text-[11px]">
+            <span id="taxReceiptCount">0</span> บิล
+          </div>
+        </div>
+
+        <!-- Per-Person Refund Breakdown -->
+        <div class="grid grid-cols-3 divide-x divide-stone-700/60 pt-1 text-center">
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-indigo-300">👤 Pi</span>
+            <div class="text-sm font-bold font-mono text-emerald-300 mt-0.5">+¥<span id="taxPiRefundJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="taxPiRefundThb">0</span></div>
+            <div class="text-[9px] text-stone-500 font-mono mt-0.5">ซื้อ ¥<span id="taxPiPurchasesJpy">0</span></div>
+          </div>
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-rose-300">👤 Pung</span>
+            <div class="text-sm font-bold font-mono text-emerald-300 mt-0.5">+¥<span id="taxPungRefundJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="taxPungRefundThb">0</span></div>
+            <div class="text-[9px] text-stone-500 font-mono mt-0.5">ซื้อ ¥<span id="taxPungPurchasesJpy">0</span></div>
+          </div>
+          <div class="px-2">
+            <span class="text-[10px] uppercase font-bold text-emerald-300">👥 กองกลาง</span>
+            <div class="text-sm font-bold font-mono text-emerald-300 mt-0.5">+¥<span id="taxAllRefundJpy">0</span></div>
+            <div class="text-[10px] text-stone-400 font-mono">฿<span id="taxAllRefundThb">0</span></div>
+            <div class="text-[9px] text-stone-500 font-mono mt-0.5">ซื้อ ¥<span id="taxAllPurchasesJpy">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tax Refund List Card -->
+      <div class="bg-white rounded-2xl p-4 border border-[#E8E3DC] shadow-sm space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider">รายการสินค้าปลอดภาษี</h3>
+            <span id="taxListCountBadge" class="text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-full">0 บิล</span>
+          </div>
+          <span class="text-[11px] text-stone-400">เรียงตามรายการล่าสุด</span>
+        </div>
+
+        <!-- Filter tax refund items by person -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto hide-scrollbar text-xs font-semibold py-0.5 border-b border-stone-100 pb-2">
+          <button type="button" onclick="setTaxUserFilter('ALL')" id="taxFilterBtn-ALL" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm">
+            ทั้งหมด
+          </button>
+          <button type="button" onclick="setTaxUserFilter('Pi')" id="taxFilterBtn-Pi" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👤 Pi
+          </button>
+          <button type="button" onclick="setTaxUserFilter('Pung')" id="taxFilterBtn-Pung" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👤 Pung
+          </button>
+          <button type="button" onclick="setTaxUserFilter('All')" id="taxFilterBtn-All" class="px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200">
+            👥 All (กองกลาง)
+          </button>
+        </div>
+
+        <!-- List container -->
+        <div id="taxRefundListContainer" class="space-y-2.5">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div id="noTaxRefundMessage" class="py-10 text-center space-y-2">
+          <div class="text-2xl">🛍️</div>
+          <div class="text-xs font-semibold text-stone-600">ยังไม่มีรายการที่เลือกทำ Tax Refund</div>
+          <div class="text-[11px] text-stone-400 max-w-xs mx-auto">
+            คุณสามารถกดเลือก 'ทำ Tax Refund' ในฟอร์มบันทึก หรือแตะปุ่ม '+ Tax Refund' ที่การ์ดรายการในแท็บค่าใช้จ่ายได้ทันที
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Japan Tax-Free Advice Tip -->
+      <div class="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3.5 text-xs text-amber-900 space-y-1.5">
+        <div class="flex items-center space-x-1.5 font-bold text-amber-950">
+          <span>💡</span>
+          <span>ข้อควรรู้ Tax-Free ที่ญี่ปุ่น & สนามบิน</span>
+        </div>
+        <ul class="text-[11px] text-amber-800 space-y-1 list-disc pl-4 font-normal">
+          <li><strong>เกณฑ์ขั้นต่ำ:</strong> ยอดซื้อสินค้าตั้งแต่ 5,000 เยนขึ้นไป (ไม่รวมภาษี) ในร้านเดียวกันในวันเดียวกัน</li>
+          <li><strong>สินค้าอุปโภคบริโภค (Consumables):</strong> ร้านจะบรรจุในถุงซีลใส <em>ห้ามแกะใช้ในประเทศญี่ปุ่น</em> มิฉะนั้นจะถูกเรียกเก็บภาษีคืน</li>
+          <li><strong>ที่สนามบิน (Customs Scan):</strong> แสดงพาสปอร์ตหรือสแกน QR Code Visit Japan Web ที่ตู้ศุลกากรก่อนผ่านด่านตรวจความปลอดภัย</li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: FLIGHT SCHEDULE & DEPARTURE -->
     <!-- ===================================================================== -->
     <section id="tabContent-flight" class="hidden space-y-4">
       <div class="flex items-center justify-between px-1">
@@ -1175,18 +1334,22 @@
      * Tab Navigation Switcher
      */
     function switchTab(tabName) {
-      const tabs = ['spots', 'expenses', 'flight'];
+      const tabs = ['spots', 'expenses', 'taxRefund', 'flight'];
       tabs.forEach(t => {
         const btn = document.getElementById('tabBtn-' + t);
         const content = document.getElementById('tabContent-' + t);
+        if (!btn || !content) return;
         if (t === tabName) {
-          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 bg-white text-stone-900 shadow-sm font-bold';
+          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 bg-white text-stone-900 shadow-sm font-bold';
           content.classList.remove('hidden');
         } else {
-          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1.5 hover:text-stone-900 font-medium text-stone-600';
+          btn.className = 'py-2 rounded-lg transition-all text-center flex items-center justify-center space-x-1 hover:text-stone-900 font-medium text-stone-600';
           content.classList.add('hidden');
         }
       });
+      if (tabName === 'taxRefund') {
+        renderTaxRefund();
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1359,6 +1522,8 @@
         return;
       }
 
+      const isTaxRefund = document.getElementById('expTaxRefundYes')?.checked || false;
+
       const expense = {
         id: 'EXP-' + Date.now(),
         date: date || new Date().toISOString().split('T')[0],
@@ -1367,7 +1532,8 @@
         person: person, // 'Pi', 'Pung', 'All'
         amountJPY: amountJPY,
         amountTHB: amountTHB,
-        note: note
+        note: note,
+        isTaxRefund: isTaxRefund
       };
 
       expensesData.unshift(expense);
@@ -1379,6 +1545,9 @@
       document.getElementById('expAmountJPY').value = '';
       document.getElementById('expAmountTHB').value = '';
       document.getElementById('expNote').value = '';
+      if (document.getElementById('expTaxRefundNo')) {
+        document.getElementById('expTaxRefundNo').checked = true;
+      }
 
       showToast(`บันทึกค่าใช้จ่าย (${person}) เรียบร้อย`);
 
@@ -1641,12 +1810,24 @@
                   personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">👥 All</span>';
                 }
 
+                const isTax = !!e.isTaxRefund;
+                const estRefundJpy = Math.round((e.amountJPY || 0) * taxRefundRate);
+                const taxBadgeHtml = isTax
+                  ? `<button type="button" onclick="toggleTaxRefund('${e.id}', event)" class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 hover:bg-emerald-100 transition-colors shadow-2xs" title="คลิกเพื่อยกเลิก Tax Refund">
+                       <span>🏷️ Tax Refund</span>
+                       <span class="text-[9px] text-emerald-600 font-mono">(คืน ~¥${estRefundJpy.toLocaleString()})</span>
+                     </button>`
+                  : `<button type="button" onclick="toggleTaxRefund('${e.id}', event)" class="inline-flex items-center space-x-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-500 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-200 border border-transparent transition-colors" title="คลิกเพื่อทำ Tax Refund รายการนี้">
+                       <span>+ Tax Refund</span>
+                     </button>`;
+
                 return `
                   <div class="py-2.5 flex items-center justify-between text-xs">
-                    <div class="space-y-0.5 pr-2">
+                    <div class="space-y-1 pr-2">
                       <div class="flex items-center space-x-1.5 flex-wrap">
                         <span class="font-bold text-stone-900">${escapeHtml(e.item)}</span>
                         ${personBadge}
+                        ${taxBadgeHtml}
                       </div>
                       <div class="text-[11px] text-stone-500 flex items-center space-x-1.5 flex-wrap">
                         <span class="text-stone-600 font-medium">${escapeHtml(e.category || '')}</span>
@@ -1739,7 +1920,231 @@
         `;
         grandTotalFooter.classList.remove('hidden');
       }
+
+      // Automatically sync Tax Refund dashboard
+      renderTaxRefund();
     }
+
+    /**
+     * ========================================================================
+     * TAX REFUND MODULE LOGIC
+     * ========================================================================
+     */
+    let taxRefundRate = 0.10; // Standard 10%
+    let currentTaxUserFilter = 'ALL';
+
+    function setTaxRefundRate(rate) {
+      taxRefundRate = parseFloat(rate) || 0.10;
+      const btn10 = document.getElementById('taxRateBtn-10');
+      const btn8 = document.getElementById('taxRateBtn-845');
+      if (rate >= 0.09) {
+        if (btn10) btn10.className = 'px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-400 text-stone-900 shadow-2xs';
+        if (btn8) btn8.className = 'px-2 py-0.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900';
+      } else {
+        if (btn10) btn10.className = 'px-2 py-0.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900';
+        if (btn8) btn8.className = 'px-2 py-0.5 rounded-lg text-xs font-bold bg-amber-400 text-stone-900 shadow-2xs';
+      }
+      renderExpenses();
+      renderTaxRefund();
+      showToast('ปรับอัตราคืนภาษีเป็น ' + (taxRefundRate * 100).toFixed(2) + '%');
+    }
+
+    function setTaxUserFilter(user) {
+      currentTaxUserFilter = user;
+      const users = ['ALL', 'Pi', 'Pung', 'All'];
+      users.forEach(u => {
+        const btn = document.getElementById('taxFilterBtn-' + u);
+        if (!btn) return;
+        if (u === user) {
+          btn.className = 'px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-900 text-white shadow-sm';
+        } else {
+          btn.className = 'px-3 py-1 rounded-full whitespace-nowrap transition-all bg-stone-100 text-stone-700 hover:bg-stone-200';
+        }
+      });
+      renderTaxRefund();
+    }
+
+    function toggleTaxRefund(id, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const item = expensesData.find(e => String(e.id) === String(id));
+      if (!item) return;
+
+      item.isTaxRefund = !item.isTaxRefund;
+      saveExpensesToStorage();
+      renderExpenses();
+      renderTaxRefund();
+
+      const msg = item.isTaxRefund 
+        ? ('ทำ Tax Refund: ' + item.item + ' แล้ว') 
+        : ('ยกเลิก Tax Refund: ' + item.item + ' แล้ว');
+      showToast(msg);
+
+      // Background sync to Google Sheets
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => console.log('Tax Refund status synced to Google Sheet'))
+          .withFailureHandler(err => console.warn('Could not sync Tax Refund status', err))
+          .toggleExpenseTaxRefund(id, item.isTaxRefund);
+      }
+    }
+
+    function renderTaxRefund() {
+      const taxItems = (expensesData || []).filter(e => !!e.isTaxRefund);
+
+      // Update badge on Tab 3 button
+      const badge = document.getElementById('tabTaxCountBadge');
+      if (badge) {
+        badge.textContent = taxItems.length;
+        if (taxItems.length > 0) {
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+
+      // Calculations
+      let totalPurchasesJPY = 0;
+      let totalPurchasesTHB = 0;
+      let piPurchasesJPY = 0;
+      let piPurchasesTHB = 0;
+      let pungPurchasesJPY = 0;
+      let pungPurchasesTHB = 0;
+      let allPurchasesJPY = 0;
+      let allPurchasesTHB = 0;
+
+      taxItems.forEach(e => {
+        const jpy = (e.amountJPY || 0);
+        const thb = (e.amountTHB || Math.round(jpy * exchangeRate));
+        totalPurchasesJPY += jpy;
+        totalPurchasesTHB += thb;
+
+        const p = e.person || 'All';
+        if (p === 'Pi') {
+          piPurchasesJPY += jpy;
+          piPurchasesTHB += thb;
+        } else if (p === 'Pung') {
+          pungPurchasesJPY += jpy;
+          pungPurchasesTHB += thb;
+        } else {
+          allPurchasesJPY += jpy;
+          allPurchasesTHB += thb;
+        }
+      });
+
+      const totalRefundJPY = Math.round(totalPurchasesJPY * taxRefundRate);
+      const totalRefundTHB = Math.round(totalPurchasesTHB * taxRefundRate);
+      const piRefundJPY = Math.round(piPurchasesJPY * taxRefundRate);
+      const piRefundTHB = Math.round(piPurchasesTHB * taxRefundRate);
+      const pungRefundJPY = Math.round(pungPurchasesJPY * taxRefundRate);
+      const pungRefundTHB = Math.round(pungPurchasesTHB * taxRefundRate);
+      const allRefundJPY = Math.round(allPurchasesJPY * taxRefundRate);
+      const allRefundTHB = Math.round(allPurchasesTHB * taxRefundRate);
+
+      const setEl = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+
+      setEl('taxTotalPurchasesJpy', totalPurchasesJPY.toLocaleString());
+      setEl('taxTotalPurchasesThb', totalPurchasesTHB.toLocaleString());
+      setEl('taxTotalRefundJpy', totalRefundJPY.toLocaleString());
+      setEl('taxTotalRefundThb', totalRefundTHB.toLocaleString());
+      setEl('taxReceiptCount', taxItems.length);
+
+      setEl('taxPiPurchasesJpy', piPurchasesJPY.toLocaleString());
+      setEl('taxPiRefundJpy', piRefundJPY.toLocaleString());
+      setEl('taxPiRefundThb', piRefundTHB.toLocaleString());
+
+      setEl('taxPungPurchasesJpy', pungPurchasesJPY.toLocaleString());
+      setEl('taxPungRefundJpy', pungRefundJPY.toLocaleString());
+      setEl('taxPungRefundThb', pungRefundTHB.toLocaleString());
+
+      setEl('taxAllPurchasesJpy', allPurchasesJPY.toLocaleString());
+      setEl('taxAllRefundJpy', allRefundJPY.toLocaleString());
+      setEl('taxAllRefundThb', allRefundTHB.toLocaleString());
+
+      // Filter list by person
+      let listToShow = taxItems;
+      if (currentTaxUserFilter !== 'ALL') {
+        listToShow = taxItems.filter(e => (e.person || 'All') === currentTaxUserFilter);
+      }
+
+      const container = document.getElementById('taxRefundListContainer');
+      const emptyMsg = document.getElementById('noTaxRefundMessage');
+      const countBadge = document.getElementById('taxListCountBadge');
+
+      if (countBadge) {
+        countBadge.textContent = listToShow.length + ' บิล';
+      }
+
+      if (listToShow.length === 0) {
+        if (container) container.innerHTML = '';
+        if (emptyMsg) emptyMsg.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyMsg) emptyMsg.classList.add('hidden');
+
+      if (container) {
+        container.innerHTML = listToShow.map(e => {
+          const p = e.person || 'All';
+          let personBadge = '';
+          if (p === 'Pi') {
+            personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/60">👤 Pi</span>';
+          } else if (p === 'Pung') {
+            personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60">👤 Pung</span>';
+          } else {
+            personBadge = '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">👥 All</span>';
+          }
+
+          const itemRefundJPY = Math.round((e.amountJPY || 0) * taxRefundRate);
+          const itemRefundTHB = Math.round((e.amountTHB || Math.round((e.amountJPY || 0) * exchangeRate)) * taxRefundRate);
+
+          return `
+            <div class="p-3 bg-white rounded-xl border border-stone-200/80 shadow-2xs hover:border-emerald-300 transition-colors space-y-2">
+              <div class="flex items-start justify-between">
+                <div class="space-y-0.5">
+                  <div class="flex items-center space-x-1.5 flex-wrap">
+                    <span class="font-bold text-stone-900 text-xs">${escapeHtml(e.item)}</span>
+                    ${personBadge}
+                  </div>
+                  <div class="text-[11px] text-stone-500 flex items-center space-x-1.5 flex-wrap">
+                    <span class="text-stone-600 font-medium">${escapeHtml(e.category || '')}</span>
+                    <span>•</span>
+                    <span>${normalizeDateStr(e.date)}</span>
+                    ${e.note ? `<span>•</span><span class="text-stone-400 italic">${escapeHtml(e.note)}</span>` : ''}
+                  </div>
+                </div>
+
+                <div class="text-right shrink-0">
+                  <div class="text-[10px] text-stone-400 font-medium uppercase">ยอดซื้อ</div>
+                  <div class="font-bold font-mono text-stone-900 text-xs">¥${(e.amountJPY || 0).toLocaleString()}</div>
+                  <div class="text-[10px] text-stone-400 font-mono">฿${(e.amountTHB || Math.round((e.amountJPY || 0) * exchangeRate)).toLocaleString()}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between pt-2 border-t border-stone-100 text-xs">
+                <div class="flex items-center space-x-1.5 text-emerald-700 font-semibold text-[11px]">
+                  <span>🏷️ เงินคืนภาษี:</span>
+                  <span class="font-bold font-mono text-emerald-800 text-xs">+¥${itemRefundJPY.toLocaleString()}</span>
+                  <span class="font-mono text-[10px] text-emerald-600">(+฿${itemRefundTHB.toLocaleString()})</span>
+                </div>
+                <button 
+                  type="button" 
+                  onclick="toggleTaxRefund('${e.id}', event)" 
+                  class="text-[10px] font-medium text-stone-400 hover:text-rose-600 transition-colors px-2 py-0.5 rounded border border-stone-200 hover:border-rose-200"
+                  title="ยกเลิกรายการนี้ออกจาก Tax Refund"
+                >
+                  ยกเลิก Tax Refund
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    };
 
     /**
      * ========================================================================

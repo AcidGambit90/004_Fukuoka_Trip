@@ -52,6 +52,10 @@ function doGet(e) {
     return createJsonResponse(getSpotsData());
   } else if (action === 'getExpenses') {
     return createJsonResponse(getExpenses());
+  } else if (action === 'toggleTaxRefund') {
+    const id = e.parameter.id;
+    const status = e.parameter.status === 'true' || e.parameter.status === 'Yes';
+    return createJsonResponse(toggleExpenseTaxRefund(id, status));
   } else if (action === 'fixFukuokaColumns') {
     return createJsonResponse({ success: true, message: fixFukuokaSheetColumns() });
   } else if (action === 'fixExpensesHeader') {
@@ -269,16 +273,16 @@ function findHeaderIndex(headers, candidates) {
  */
 function getOrCreateExpensesSheet(ss) {
   let sheet = ss.getSheetByName(CONFIG.EXPENSES_SHEET_NAME);
-  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp'];
+  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund'];
   
   if (!sheet) {
     sheet = ss.insertSheet(CONFIG.EXPENSES_SHEET_NAME);
-    // Setup header row with Person column
+    // Setup header row with Person and Tax_Refund columns
     sheet.appendRow(correctHeaders);
     sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
     sheet.setFrozenRows(1);
   } else {
-    // Check if the current header row has mismatched or missing Person column
+    // Check if the current header row has mismatched or missing Person / Tax_Refund columns
     const lastCol = Math.max(sheet.getLastColumn(), correctHeaders.length);
     const currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
     const headerStr = currentHeaders.map(function(h) { return String(h).trim().toLowerCase(); }).join(',');
@@ -288,6 +292,11 @@ function getOrCreateExpensesSheet(ss) {
       sheet.getRange(1, 1, 1, correctHeaders.length).setValues([correctHeaders]);
       sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
       sheet.setFrozenRows(1);
+    } else if (!headerStr.includes('tax_refund') && !headerStr.includes('taxrefund') && !headerStr.includes('tax_free')) {
+      // Append Tax_Refund column safely without altering existing columns
+      const nextCol = sheet.getLastColumn() + 1;
+      sheet.getRange(1, nextCol).setValue('Tax_Refund');
+      sheet.getRange(1, nextCol).setFontWeight('bold').setBackground('#F3EFEA');
     }
   }
   return sheet;
@@ -299,7 +308,7 @@ function getOrCreateExpensesSheet(ss) {
 function fixExpensesSheetHeader() {
   const ss = getSpreadsheet();
   const sheet = getOrCreateExpensesSheet(ss);
-  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp'];
+  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund'];
   sheet.getRange(1, 1, 1, correctHeaders.length).setValues([correctHeaders]);
   sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
   sheet.setFrozenRows(1);
@@ -310,7 +319,7 @@ function fixExpensesSheetHeader() {
 /**
  * Adds an expense item to the Google Sheet
  * 
- * @param {Object} expense - { date, item, category, person, amountJPY, amountTHB, note }
+ * @param {Object} expense - { date, item, category, person, amountJPY, amountTHB, note, isTaxRefund }
  * @return {Object} result
  */
 function addExpense(expense) {
@@ -327,8 +336,9 @@ function addExpense(expense) {
     const amountJPY = parseFloat(expense.amountJPY) || 0;
     const amountTHB = parseFloat(expense.amountTHB) || Math.round(amountJPY * 0.23);
     const note = expense.note || '';
+    const isTaxRefund = (expense.isTaxRefund === true || expense.taxRefund === 'Yes' || expense.taxRefund === true) ? 'Yes' : 'No';
     
-    sheet.appendRow([id, dateStr, item, category, person, amountJPY, amountTHB, note, now.toISOString()]);
+    sheet.appendRow([id, dateStr, item, category, person, amountJPY, amountTHB, note, now.toISOString(), isTaxRefund]);
     
     return {
       success: true,
@@ -341,6 +351,53 @@ function addExpense(expense) {
       success: false,
       error: error.message
     };
+  }
+}
+
+/**
+ * Toggles or updates the Tax Refund status of an expense in Google Sheet
+ * 
+ * @param {string} id - Expense ID
+ * @param {boolean} isTaxRefund - new Tax Refund status
+ * @return {Object}
+ */
+function toggleExpenseTaxRefund(id, isTaxRefund) {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = getOrCreateExpensesSheet(ss);
+    if (!sheet) {
+      return { success: false, error: 'Sheet not found' };
+    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return { success: false, error: 'No data in sheet' };
+    }
+    
+    const headers = data[0].map(function(h) { return String(h).trim().toLowerCase(); });
+    let colTaxRefund = findHeaderIndex(headers, ['tax_refund', 'taxrefund', 'tax_free', 'taxfree', 'refund', 'ภาษี']);
+    
+    // If Tax_Refund column does not exist yet in header, append it
+    if (colTaxRefund === -1) {
+      colTaxRefund = headers.length;
+      sheet.getRange(1, colTaxRefund + 1).setValue('Tax_Refund');
+      sheet.getRange(1, colTaxRefund + 1).setFontWeight('bold').setBackground('#F3EFEA');
+    }
+    
+    const statusVal = isTaxRefund ? 'Yes' : 'No';
+    let found = false;
+    
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() === String(id).trim()) {
+        sheet.getRange(i + 1, colTaxRefund + 1).setValue(statusVal);
+        found = true;
+        break;
+      }
+    }
+    
+    return { success: true, id: id, isTaxRefund: isTaxRefund, found: found };
+  } catch (error) {
+    Logger.log('Error updating expense Tax Refund: ' + error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -367,6 +424,7 @@ function getExpenses() {
     const colPerson = findHeaderIndex(headers, ['person', 'user', 'คนจ่าย', 'ผู้ใช้']);
     const colJpy = findHeaderIndex(headers, ['amount_jpy', 'jpy', 'เยน']);
     const colThb = findHeaderIndex(headers, ['amount_thb', 'thb', 'บาท']);
+    const colTaxRefund = findHeaderIndex(headers, ['tax_refund', 'taxrefund', 'tax_free', 'taxfree', 'refund', 'ภาษี']);
     
     const expenses = [];
     let totalJPY = 0;
@@ -389,13 +447,23 @@ function getExpenses() {
       if (colPerson >= 0 && row[colPerson]) {
         person = String(row[colPerson]).trim();
       } else if (row.length >= 9 && row[4]) {
-        // If 9 columns, col 4 is person
+        // If 9+ columns, col 4 is person
         person = String(row[4]).trim();
       }
       
       const amountJPY = parseFloat(colJpy >= 0 ? row[colJpy] : (row.length >= 9 ? row[5] : row[4])) || 0;
       const amountTHB = parseFloat(colThb >= 0 ? row[colThb] : (row.length >= 9 ? row[6] : row[5])) || 0;
       const note = (row.length >= 9 ? (row[7] || '') : (row[6] || ''));
+      
+      // Determine Tax Refund status
+      let isTaxRefund = false;
+      if (colTaxRefund >= 0 && row[colTaxRefund] !== undefined && row[colTaxRefund] !== '') {
+        const val = String(row[colTaxRefund]).trim().toLowerCase();
+        isTaxRefund = (val === 'yes' || val === 'true' || val === 'ทำ' || val === '1');
+      } else if (row.length >= 10 && row[9] !== undefined && row[9] !== '') {
+        const val = String(row[9]).trim().toLowerCase();
+        isTaxRefund = (val === 'yes' || val === 'true' || val === 'ทำ' || val === '1');
+      }
       
       totalJPY += amountJPY;
       totalTHB += amountTHB;
@@ -408,7 +476,8 @@ function getExpenses() {
         person: person,
         amountJPY: amountJPY,
         amountTHB: amountTHB,
-        note: String(note)
+        note: String(note),
+        isTaxRefund: isTaxRefund
       });
     }
     
