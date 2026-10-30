@@ -54,8 +54,12 @@ function doGet(e) {
     return createJsonResponse(getExpenses());
   } else if (action === 'toggleTaxRefund') {
     const id = e.parameter.id;
-    const status = e.parameter.status === 'true' || e.parameter.status === 'Yes';
+    const status = e.parameter.status;
     return createJsonResponse(toggleExpenseTaxRefund(id, status));
+  } else if (action === 'checkGeminiKey') {
+    return createJsonResponse({ hasKey: !!getGeminiApiKey() });
+  } else if (action === 'saveGeminiKey') {
+    return createJsonResponse(saveGeminiApiKey(e.parameter.key));
   } else if (action === 'fixFukuokaColumns') {
     return createJsonResponse({ success: true, message: fixFukuokaSheetColumns() });
   } else if (action === 'fixExpensesHeader') {
@@ -264,39 +268,48 @@ function findHeaderIndex(headers, candidates) {
 }
 
 // ============================================================================
-// EXPENSE TRACKER (Optional Tab)
+// EXPENSE TRACKER & TAX REFUND MODULE
 // ============================================================================
 
 /**
  * Retrieves or creates the 'Expenses' sheet in the spreadsheet
- * Automatically verifies and fixes mismatched header columns
+ * Automatically verifies and fixes mismatched header columns, supporting Receipt_ID and Tax_Refund
  */
 function getOrCreateExpensesSheet(ss) {
   let sheet = ss.getSheetByName(CONFIG.EXPENSES_SHEET_NAME);
-  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund'];
+  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund', 'Receipt_ID'];
   
   if (!sheet) {
     sheet = ss.insertSheet(CONFIG.EXPENSES_SHEET_NAME);
-    // Setup header row with Person and Tax_Refund columns
+    // Setup header row with Person, Tax_Refund, and Receipt_ID columns
     sheet.appendRow(correctHeaders);
     sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
     sheet.setFrozenRows(1);
   } else {
-    // Check if the current header row has mismatched or missing Person / Tax_Refund columns
     const lastCol = Math.max(sheet.getLastColumn(), correctHeaders.length);
     const currentHeaders = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
     const headerStr = currentHeaders.map(function(h) { return String(h).trim().toLowerCase(); }).join(',');
     
-    // If 'person' is missing from header (e.g. old 8-column header), auto-correct row 1
+    // If 'person' is missing from header, auto-correct row 1
     if (!headerStr.includes('person') && !headerStr.includes('คนจ่าย')) {
       sheet.getRange(1, 1, 1, correctHeaders.length).setValues([correctHeaders]);
       sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
       sheet.setFrozenRows(1);
-    } else if (!headerStr.includes('tax_refund') && !headerStr.includes('taxrefund') && !headerStr.includes('tax_free')) {
-      // Append Tax_Refund column safely without altering existing columns
-      const nextCol = sheet.getLastColumn() + 1;
-      sheet.getRange(1, nextCol).setValue('Tax_Refund');
-      sheet.getRange(1, nextCol).setFontWeight('bold').setBackground('#F3EFEA');
+    } else {
+      // Check and append Tax_Refund if missing
+      if (!headerStr.includes('tax_refund') && !headerStr.includes('taxrefund') && !headerStr.includes('tax_free')) {
+        const nextCol = sheet.getLastColumn() + 1;
+        sheet.getRange(1, nextCol).setValue('Tax_Refund');
+        sheet.getRange(1, nextCol).setFontWeight('bold').setBackground('#F3EFEA');
+      }
+      // Check and append Receipt_ID if missing
+      const updatedHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const updatedStr = updatedHeaders.map(function(h) { return String(h).trim().toLowerCase(); }).join(',');
+      if (!updatedStr.includes('receipt_id') && !updatedStr.includes('receiptid')) {
+        const nextCol = sheet.getLastColumn() + 1;
+        sheet.getRange(1, nextCol).setValue('Receipt_ID');
+        sheet.getRange(1, nextCol).setFontWeight('bold').setBackground('#F3EFEA');
+      }
     }
   }
   return sheet;
@@ -308,7 +321,7 @@ function getOrCreateExpensesSheet(ss) {
 function fixExpensesSheetHeader() {
   const ss = getSpreadsheet();
   const sheet = getOrCreateExpensesSheet(ss);
-  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund'];
+  const correctHeaders = ['ID', 'Date', 'Item', 'Category', 'Person', 'Amount_JPY', 'Amount_THB', 'Note', 'Timestamp', 'Tax_Refund', 'Receipt_ID'];
   sheet.getRange(1, 1, 1, correctHeaders.length).setValues([correctHeaders]);
   sheet.getRange(1, 1, 1, correctHeaders.length).setFontWeight('bold').setBackground('#F3EFEA');
   sheet.setFrozenRows(1);
@@ -319,7 +332,7 @@ function fixExpensesSheetHeader() {
 /**
  * Adds an expense item to the Google Sheet
  * 
- * @param {Object} expense - { date, item, category, person, amountJPY, amountTHB, note, isTaxRefund }
+ * @param {Object} expense - { date, item, category, person, amountJPY, amountTHB, note, isTaxRefund, taxStatus, receiptId }
  * @return {Object} result
  */
 function addExpense(expense) {
@@ -336,13 +349,21 @@ function addExpense(expense) {
     const amountJPY = parseFloat(expense.amountJPY) || 0;
     const amountTHB = parseFloat(expense.amountTHB) || Math.round(amountJPY * 0.23);
     const note = expense.note || '';
-    const isTaxRefund = (expense.isTaxRefund === true || expense.taxRefund === 'Yes' || expense.taxRefund === true) ? 'Yes' : 'No';
     
-    sheet.appendRow([id, dateStr, item, category, person, amountJPY, amountTHB, note, now.toISOString(), isTaxRefund]);
+    let taxStatus = 'No';
+    if (expense.taxStatus) {
+      taxStatus = expense.taxStatus;
+    } else if (expense.isTaxRefund === true || expense.taxRefund === 'Yes' || expense.taxRefund === true) {
+      taxStatus = 'Claim';
+    }
+    const receiptId = expense.receiptId || id;
+    
+    sheet.appendRow([id, dateStr, item, category, person, amountJPY, amountTHB, note, now.toISOString(), taxStatus, receiptId]);
     
     return {
       success: true,
       id: id,
+      receiptId: receiptId,
       message: 'Expense recorded successfully'
     };
   } catch (error) {
@@ -355,13 +376,89 @@ function addExpense(expense) {
 }
 
 /**
+ * Adds multiple expense items from a scanned receipt in a single batch write
+ * 
+ * @param {Array<Object>} items - Array of items { name/item, category, person, amountJPY, amountTHB, note, taxStatus }
+ * @param {Object} metadata - { receiptId, storeName, date, taxStatus }
+ * @return {Object}
+ */
+function addBatchExpenses(items, metadata) {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = getOrCreateExpensesSheet(ss);
+    if (!sheet) {
+      return { success: false, error: 'Expenses sheet not found' };
+    }
+    if (!items || !items.length) {
+      return { success: false, error: 'No items provided' };
+    }
+
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const receiptId = (metadata && metadata.receiptId) ? metadata.receiptId : ('REC-' + Utilities.formatDate(now, 'GMT+7', 'yyyyMMdd-HHmmss'));
+    const defaultDate = (metadata && metadata.date) ? metadata.date : Utilities.formatDate(now, 'GMT+7', 'yyyy-MM-dd');
+    const defaultTaxStatus = (metadata && metadata.taxStatus) ? metadata.taxStatus : 'No';
+    const storeName = (metadata && metadata.storeName) ? metadata.storeName : '';
+
+    const rows = [];
+    for (let i = 0; i < items.length; i++) {
+      const it = items[i];
+      const id = 'EXP-' + now.getTime() + '-' + (i + 1);
+      const dateStr = it.date || defaultDate;
+      const itemName = it.item || it.name || 'Expense Item';
+      const category = it.category || 'ช้อปปิ้ง & ของฝาก';
+      const person = it.person || 'All';
+      const amountJPY = parseFloat(it.amountJPY) || 0;
+      const amountTHB = parseFloat(it.amountTHB) || Math.round(amountJPY * 0.23);
+      
+      let noteStr = it.note || '';
+      if (storeName && !noteStr.includes(storeName)) {
+        noteStr = ('[' + storeName + '] ' + noteStr).trim();
+      }
+      
+      const itemTaxStatus = it.taxStatus || defaultTaxStatus;
+
+      rows.push([
+        id,
+        dateStr,
+        itemName,
+        category,
+        person,
+        amountJPY,
+        amountTHB,
+        noteStr,
+        nowIso,
+        itemTaxStatus,
+        receiptId
+      ]);
+    }
+
+    if (rows.length > 0) {
+      const startRow = sheet.getLastRow() + 1;
+      const numCols = rows[0].length;
+      sheet.getRange(startRow, 1, rows.length, numCols).setValues(rows);
+    }
+
+    return {
+      success: true,
+      receiptId: receiptId,
+      count: rows.length,
+      message: 'Saved ' + rows.length + ' items from ' + (storeName || 'receipt') + ' successfully'
+    };
+  } catch (error) {
+    Logger.log('Error adding batch expenses: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Toggles or updates the Tax Refund status of an expense in Google Sheet
  * 
  * @param {string} id - Expense ID
- * @param {boolean} isTaxRefund - new Tax Refund status
+ * @param {string|boolean} status - new Tax Refund status ('Claim', 'Done', 'No' or boolean)
  * @return {Object}
  */
-function toggleExpenseTaxRefund(id, isTaxRefund) {
+function toggleExpenseTaxRefund(id, status) {
   try {
     const ss = getSpreadsheet();
     const sheet = getOrCreateExpensesSheet(ss);
@@ -376,16 +473,27 @@ function toggleExpenseTaxRefund(id, isTaxRefund) {
     const headers = data[0].map(function(h) { return String(h).trim().toLowerCase(); });
     let colTaxRefund = findHeaderIndex(headers, ['tax_refund', 'taxrefund', 'tax_free', 'taxfree', 'refund', 'ภาษี']);
     
-    // If Tax_Refund column does not exist yet in header, append it
     if (colTaxRefund === -1) {
       colTaxRefund = headers.length;
       sheet.getRange(1, colTaxRefund + 1).setValue('Tax_Refund');
       sheet.getRange(1, colTaxRefund + 1).setFontWeight('bold').setBackground('#F3EFEA');
     }
     
-    const statusVal = isTaxRefund ? 'Yes' : 'No';
-    let found = false;
+    let statusVal = 'No';
+    if (typeof status === 'string') {
+      const lower = status.toLowerCase();
+      if (lower === 'claim' || lower === 'yes' || lower === 'true') {
+        statusVal = 'Claim';
+      } else if (lower === 'done' || lower === 'deducted' || lower === '免税') {
+        statusVal = 'Done';
+      } else {
+        statusVal = 'No';
+      }
+    } else if (typeof status === 'boolean') {
+      statusVal = status ? 'Claim' : 'No';
+    }
     
+    let found = false;
     for (let i = 1; i < data.length; i++) {
       if (String(data[i][0]).trim() === String(id).trim()) {
         sheet.getRange(i + 1, colTaxRefund + 1).setValue(statusVal);
@@ -394,7 +502,7 @@ function toggleExpenseTaxRefund(id, isTaxRefund) {
       }
     }
     
-    return { success: true, id: id, isTaxRefund: isTaxRefund, found: found };
+    return { success: true, id: id, taxStatus: statusVal, isTaxRefund: (statusVal !== 'No'), found: found };
   } catch (error) {
     Logger.log('Error updating expense Tax Refund: ' + error.message);
     return { success: false, error: error.message };
@@ -425,6 +533,7 @@ function getExpenses() {
     const colJpy = findHeaderIndex(headers, ['amount_jpy', 'jpy', 'เยน']);
     const colThb = findHeaderIndex(headers, ['amount_thb', 'thb', 'บาท']);
     const colTaxRefund = findHeaderIndex(headers, ['tax_refund', 'taxrefund', 'tax_free', 'taxfree', 'refund', 'ภาษี']);
+    const colReceiptId = findHeaderIndex(headers, ['receipt_id', 'receiptid', 'receipt', 'slip_id', 'สลิป']);
     
     const expenses = [];
     let totalJPY = 0;
@@ -440,14 +549,13 @@ function getExpenses() {
         date = row[1] ? String(row[1]).trim() : '';
       }
       const item = row[2] ? String(row[2]) : '';
-      const category = row[3] ? String(row[3]) : 'Food';
+      const category = row[3] ? String(row[3]) : 'อาหาร & เครื่องดื่ม';
       
       // Determine person
       let person = 'All';
       if (colPerson >= 0 && row[colPerson]) {
         person = String(row[colPerson]).trim();
       } else if (row.length >= 9 && row[4]) {
-        // If 9+ columns, col 4 is person
         person = String(row[4]).trim();
       }
       
@@ -455,14 +563,37 @@ function getExpenses() {
       const amountTHB = parseFloat(colThb >= 0 ? row[colThb] : (row.length >= 9 ? row[6] : row[5])) || 0;
       const note = (row.length >= 9 ? (row[7] || '') : (row[6] || ''));
       
-      // Determine Tax Refund status
+      // Determine Tax Refund status ('Claim', 'Done', 'No')
+      let taxStatus = 'No';
       let isTaxRefund = false;
+      let rawTax = '';
       if (colTaxRefund >= 0 && row[colTaxRefund] !== undefined && row[colTaxRefund] !== '') {
-        const val = String(row[colTaxRefund]).trim().toLowerCase();
-        isTaxRefund = (val === 'yes' || val === 'true' || val === 'ทำ' || val === '1');
+        rawTax = String(row[colTaxRefund]).trim();
       } else if (row.length >= 10 && row[9] !== undefined && row[9] !== '') {
-        const val = String(row[9]).trim().toLowerCase();
-        isTaxRefund = (val === 'yes' || val === 'true' || val === 'ทำ' || val === '1');
+        rawTax = String(row[9]).trim();
+      }
+      
+      const lowerTax = rawTax.toLowerCase();
+      if (lowerTax === 'done' || lowerTax === 'deducted' || lowerTax === '免税') {
+        taxStatus = 'Done';
+        isTaxRefund = true;
+      } else if (lowerTax === 'claim' || lowerTax === 'yes' || lowerTax === 'true' || lowerTax === '1' || lowerTax === 'ทำ') {
+        taxStatus = 'Claim';
+        isTaxRefund = true;
+      } else {
+        taxStatus = 'No';
+        isTaxRefund = false;
+      }
+      
+      // Determine Receipt ID
+      let receiptId = '';
+      if (colReceiptId >= 0 && row[colReceiptId]) {
+        receiptId = String(row[colReceiptId]).trim();
+      } else if (row.length >= 11 && row[10]) {
+        receiptId = String(row[10]).trim();
+      }
+      if (!receiptId) {
+        receiptId = id;
       }
       
       totalJPY += amountJPY;
@@ -477,7 +608,9 @@ function getExpenses() {
         amountJPY: amountJPY,
         amountTHB: amountTHB,
         note: String(note),
-        isTaxRefund: isTaxRefund
+        taxStatus: taxStatus,
+        isTaxRefund: isTaxRefund,
+        receiptId: receiptId
       });
     }
     
@@ -494,6 +627,242 @@ function getExpenses() {
       success: false,
       error: error.message,
       data: []
+    };
+  }
+}
+
+// ============================================================================
+// GEMINI FLASH AI RECEIPT SCANNER INTEGRATION
+// ============================================================================
+
+/**
+ * Retrieves the Gemini API Key from ScriptProperties
+ */
+function getGeminiApiKey() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  return scriptProperties.getProperty('GEMINI_API_KEY') || 
+         scriptProperties.getProperty('GEMINI_KEY') || 
+         scriptProperties.getProperty('API_KEY');
+}
+
+/**
+ * Saves the Gemini API Key to ScriptProperties
+ */
+function saveGeminiApiKey(key) {
+  try {
+    if (key && String(key).trim()) {
+      PropertiesService.getScriptProperties().setProperty('GEMINI_API_KEY', String(key).trim());
+      return { success: true, message: 'บันทึก GEMINI_API_KEY สำเร็จแล้ว' };
+    }
+    return { success: false, error: 'กรุณาระบุ API Key ที่ถูกต้อง' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Analyzes Japanese shopping receipt images (single or multi-shot) using Gemini Flash Multimodal API
+ * 
+ * @param {Array<string>} imagesBase64 - Array of Base64-encoded receipt images
+ * @return {Object} Parsed receipt JSON
+ */
+function processReceiptImages(imagesBase64) {
+  try {
+    if (!imagesBase64 || !imagesBase64.length) {
+      return { success: false, error: 'ไม่พบรูปภาพสลิปที่ส่งมา' };
+    }
+
+    const apiKey = getGeminiApiKey();
+    if (!apiKey) {
+      return { 
+        success: false, 
+        error: 'NO_API_KEY', 
+        message: 'ยังไม่ได้ตั้งค่า GEMINI_API_KEY ใน Script Properties กรุณาตั้งค่าก่อนใช้งาน' 
+      };
+    }
+
+    // Expert prompt tailored for Japanese retail receipts & tourists
+    const systemPrompt = 'You are an expert Japanese shopping receipt analyzer for foreign travelers visiting Japan.\n' +
+      'The user provides 1 or more images of a single shopping receipt taken sequentially from top to bottom (because long receipts require multiple overlapping photos).\n' +
+      'Merge the images seamlessly, detect any overlapping lines, and ensure NO duplicate items.\n\n' +
+      'Analyze the receipt and return strictly JSON matching this structure:\n' +
+      '{\n' +
+      '  "storeName": "Store name in English or Thai + Japanese if available (e.g. \'Don Quijote Tenjin (ドン・キホーテ)\', \'Bic Camera\', \'Daimaru\', \'Matsumoto Kiyoshi\')",\n' +
+      '  "date": "YYYY-MM-DD format (convert Reiwa R6->2024, R7->2025, R8->2026, or use current date if missing)",\n' +
+      '  "receiptNumber": "Receipt ID or transaction number if visible",\n' +
+      '  "taxStatus": "Done" | "Claim" | "No",\n' +
+      '  "taxSavedOrClaimJPY": number,\n' +
+      '  "totalJPY": number,\n' +
+      '  "items": [\n' +
+      '    {\n' +
+      '      "name": "Item description in Thai or English with Japanese in parentheses (e.g. \'KitKat Matcha (キットカット抹茶)\')",\n' +
+      '      "amountJPY": number,\n' +
+      '      "qty": number,\n' +
+      '      "category": "🛍️ ช้อปปิ้ง & ของฝาก" | "🍣 อาหาร & ขนม" | "💊 ยา & เครื่องสำอาง" | "👕 เสื้อผ้า & แฟชั่น" | "🏷️ อื่นๆ"\n' +
+      '    }\n' +
+      '  ],\n' +
+      '  "note": "Brief summary e.g. \'Donki shopping 10 items\'"\n' +
+      '}\n\n' +
+      'Tax Status Rules for Japan:\n' +
+      '- "Done": If the receipt was ALREADY processed Tax-Free at the cashier (look for \'免税\', \'Tax-Free\', 0% consumption tax, or tax deducted).\n' +
+      '- "Claim": If the receipt includes 10% or 8% consumption tax (消費税) AND the total purchase is >= 5,000 JPY (needs to be claimed at the Tax Refund Counter, e.g. department stores like Daimaru/Iwataya).\n' +
+      '- "No": If total is < 5,000 JPY or non-eligible purchase.\n\n' +
+      'Ensure totalJPY matches the final amount paid (合計 / お買上合計).\n' +
+      'Return ONLY raw JSON, with no markdown code blocks or surrounding text.';
+
+    const parts = [
+      { text: systemPrompt }
+    ];
+
+    for (let i = 0; i < imagesBase64.length; i++) {
+      let raw = imagesBase64[i];
+      let mimeType = 'image/jpeg';
+      
+      if (raw.indexOf(';base64,') !== -1) {
+        const split = raw.split(';base64,');
+        const mimeMatch = split[0].match(/data:(.*?)$/);
+        if (mimeMatch && mimeMatch[1]) {
+          mimeType = mimeMatch[1];
+        }
+        raw = split[1];
+      }
+      
+      parts.push({
+        inlineData: {
+          mimeType: mimeType,
+          data: raw
+        }
+      });
+    }
+
+    const payload = {
+      contents: [
+        { parts: parts }
+      ],
+      generationConfig: {
+        temperature: 0.1,
+        responseMimeType: "application/json"
+      }
+    };
+
+    // Try active Gemini models in priority order (using latest Gemini 3.x models)
+    const models = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
+    ];
+    let lastError = null;
+    let resJson = null;
+
+    const cleanKey = apiKey.trim();
+    for (let m = 0; m < models.length; m++) {
+      const modelName = models[m];
+      const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + encodeURIComponent(cleanKey);
+      
+      try {
+        const response = UrlFetchApp.fetch(url, {
+          method: 'post',
+          contentType: 'application/json',
+          headers: {
+            'x-goog-api-key': cleanKey
+          },
+          payload: JSON.stringify(payload),
+          muteHttpExceptions: true
+        });
+
+        const code = response.getResponseCode();
+        const content = response.getContentText();
+        
+        if (code === 200) {
+          resJson = JSON.parse(content);
+          break; // Success!
+        } else {
+          Logger.log('Model ' + modelName + ' returned HTTP ' + code + ': ' + content);
+          lastError = 'HTTP ' + code + ': ' + content;
+        }
+      } catch (err) {
+        Logger.log('Error calling ' + modelName + ': ' + err.message);
+        lastError = err.message;
+      }
+    }
+
+    // Dynamic model discovery fallback if predefined list fails
+    if (!resJson) {
+      try {
+        const listUrl = 'https://generativelanguage.googleapis.com/v1beta/models?key=' + encodeURIComponent(cleanKey);
+        const listRes = UrlFetchApp.fetch(listUrl, { muteHttpExceptions: true });
+        if (listRes.getResponseCode() === 200) {
+          const listData = JSON.parse(listRes.getContentText());
+          if (listData.models && listData.models.length > 0) {
+            const available = listData.models
+              .filter(function(m) { 
+                return m.supportedGenerationMethods && m.supportedGenerationMethods.indexOf('generateContent') !== -1; 
+              })
+              .map(function(m) { return m.name.replace('models/', ''); });
+            
+            const candidateModel = available.find(function(m) { return m.indexOf('flash') !== -1; }) || available[0];
+            if (candidateModel) {
+              const dynUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' + candidateModel + ':generateContent?key=' + encodeURIComponent(cleanKey);
+              const dynRes = UrlFetchApp.fetch(dynUrl, {
+                method: 'post',
+                contentType: 'application/json',
+                headers: { 'x-goog-api-key': cleanKey },
+                payload: JSON.stringify(payload),
+                muteHttpExceptions: true
+              });
+              if (dynRes.getResponseCode() === 200) {
+                resJson = JSON.parse(dynRes.getContentText());
+              }
+            }
+          }
+        }
+      } catch (dynErr) {
+        Logger.log('Dynamic model query error: ' + dynErr.message);
+      }
+    }
+
+    if (!resJson || !resJson.candidates || !resJson.candidates[0] || !resJson.candidates[0].content) {
+      return { 
+        success: false, 
+        error: 'AI_PROCESSING_ERROR', 
+        message: 'ไม่สามารถประมวลผลสลิปได้: ' + (lastError || 'No candidates returned from Gemini') 
+      };
+    }
+
+    const candidate = resJson.candidates[0];
+    let textPart = '';
+    if (candidate.content && candidate.content.parts) {
+      for (let p = 0; p < candidate.content.parts.length; p++) {
+        const part = candidate.content.parts[p];
+        if (part.text && !part.thought) {
+          textPart = part.text;
+          break;
+        }
+      }
+      if (!textPart && candidate.content.parts.length > 0) {
+        textPart = candidate.content.parts[candidate.content.parts.length - 1].text || candidate.content.parts[0].text;
+      }
+    }
+    let cleanJsonStr = textPart.trim();
+    if (cleanJsonStr.startsWith('```json')) {
+      cleanJsonStr = cleanJsonStr.replace(/^```json/, '').replace(/```$/, '').trim();
+    } else if (cleanJsonStr.startsWith('```')) {
+      cleanJsonStr = cleanJsonStr.replace(/^```/, '').replace(/```$/, '').trim();
+    }
+
+    const parsedData = JSON.parse(cleanJsonStr);
+    return {
+      success: true,
+      data: parsedData
+    };
+  } catch (error) {
+    Logger.log('Error in processReceiptImages: ' + error.message);
+    return {
+      success: false,
+      error: error.message
     };
   }
 }

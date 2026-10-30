@@ -29,6 +29,7 @@ A purpose-built, live-synced Fukuoka travel companion that bridges Google Sheets
 - Card / list views optimized for mobile readability and one-handed thumb interaction.
 - Direct external links to Google Maps / navigation where available.
 - Tab / module for trip expense recording (บันทึกค่าใช้จ่าย).
+- AI Receipt Scanner & Tax Refund integration: Multi-shot capture for long Japanese shopping slips (Donki, Bic Camera, drugstores) using Gemini Flash, automatic item extraction into individual rows with Receipt ID linking, and instant navigation to grouped Tax Refund dashboard.
 - Tab / section for return flight schedule and departure timing (เที่ยวบินขากลับ / เวลา).
 - Architecture constrained to `code.gs` and `index.html` for clean and portable Google Apps Script deployment.
 
