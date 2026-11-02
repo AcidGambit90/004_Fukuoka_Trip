@@ -481,7 +481,7 @@
 
           <!-- Tax Refund Selector -->
           <div>
-            <label class="block text-[11px] font-semibold text-stone-500 mb-1">การทำ Tax Refund (ขอคืนภาษีนักท่องเที่ยว)</label>
+            <label class="block text-[11px] font-semibold text-stone-500 mb-1">การทำ Tax Refund (ขอคืนภาษี ณ สนามบินขาออก)</label>
             <div class="grid grid-cols-2 gap-2">
               <label class="cursor-pointer">
                 <input type="radio" name="expTaxRefund" id="expTaxRefundNo" value="no" checked class="peer sr-only">
@@ -491,8 +491,8 @@
               </label>
               <label class="cursor-pointer">
                 <input type="radio" name="expTaxRefund" id="expTaxRefundYes" value="yes" class="peer sr-only">
-                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-emerald-600 transition-all flex items-center justify-center space-x-1 border border-stone-200 peer-checked:border-emerald-600">
-                  <span class="text-xs font-bold text-stone-700 peer-checked:text-white">🏷️ ทำ Tax Refund</span>
+                <div class="py-2 text-center rounded-xl bg-stone-100 peer-checked:bg-amber-500 transition-all flex items-center justify-center space-x-1 border border-stone-200 peer-checked:border-amber-500">
+                  <span class="text-xs font-bold text-stone-700 peer-checked:text-white">🟡 ขอคืนที่สนามบิน (Claim)</span>
                 </div>
               </label>
             </div>
@@ -518,8 +518,8 @@
             <h3 class="text-xs font-bold text-stone-800 uppercase tracking-wider">สรุปรายการใช้จ่ายรายวัน</h3>
             <span id="expenseDaysBadge" class="text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200/80 px-2 py-0.5 rounded-full">0 วัน</span>
           </div>
-          <button onclick="clearAllExpenses()" class="text-[11px] text-stone-400 hover:text-red-600 transition-colors">
-            ล้างประวัติในเครื่อง
+          <button onclick="clearAllExpenses()" class="text-[11px] text-stone-400 hover:text-red-600 transition-colors flex items-center space-x-1 cursor-pointer" title="ลบรายการรายจ่ายทั้งหมดทั้งในเครื่องและ Google Sheets">
+            <span>🗑️ ล้างข้อมูลทั้งหมด (รวมในชีท)</span>
           </button>
         </div>
 
@@ -566,7 +566,7 @@
           <h2 class="text-lg font-bold text-stone-900 tracking-tight flex items-center space-x-1.5">
             <span>🏷️ สรุปรายการ Tax Refund</span>
           </h2>
-          <span class="text-xs text-stone-500 font-medium">คำนวณเงินคืนภาษีนักท่องเที่ยวในญี่ปุ่น</span>
+          <span class="text-xs text-stone-500 font-medium">คำนวณเงินคืนภาษีระบบใหม่ (Pay-Now, Refund-at-Departure)</span>
         </div>
         <div class="flex items-center space-x-1 bg-stone-100 p-1 rounded-xl text-[11px] font-semibold border border-stone-200/80">
           <span class="text-stone-500 px-1 text-[10px]">อัตราคืน:</span>
@@ -583,9 +583,9 @@
       <div class="bg-gradient-to-br from-stone-900 via-stone-850 to-stone-800 text-white rounded-2xl p-5 shadow-sm space-y-4 border border-stone-700/60">
         <div class="flex items-center justify-between border-b border-stone-700/60 pb-3">
           <div>
-            <div class="flex items-center space-x-1.5 text-xs text-emerald-400 font-bold uppercase tracking-wider mb-0.5">
+            <div class="flex items-center space-x-1.5 text-xs text-amber-400 font-bold uppercase tracking-wider mb-0.5">
               <span>🏷️</span>
-              <span>ยอดเงินคืนภาษีรวม (Est. Refund)</span>
+              <span>เงินคืนภาษีรวมที่จะได้รับที่สนามบิน (Est. Airport Refund)</span>
             </div>
             <div class="text-2xl font-black tracking-tight text-white mt-0.5 flex items-baseline space-x-1">
               <span>+¥</span><span id="taxTotalRefundJpy">0</span>
@@ -593,7 +593,7 @@
           </div>
           <div class="text-right">
             <span class="text-xs text-stone-400 font-medium">คิดเป็นเงินบาท (THB)</span>
-            <div class="text-xl font-bold text-emerald-400 mt-0.5">
+            <div class="text-xl font-bold text-amber-400 mt-0.5">
               +฿<span id="taxTotalRefundThb">0</span>
             </div>
           </div>
@@ -602,7 +602,7 @@
         <!-- Purchase Total Info Row -->
         <div class="flex items-center justify-between text-xs text-stone-300 bg-stone-800/70 p-2.5 rounded-xl border border-stone-700/40">
           <div class="flex items-center space-x-1.5">
-            <span class="text-stone-400">🛍️ ยอดซื้อปลอดภาษีรวม:</span>
+            <span class="text-stone-400">🛍️ ยอดซื้อรวมปลอดภาษี:</span>
             <span class="font-bold font-mono text-white text-xs">¥<span id="taxTotalPurchasesJpy">0</span></span>
             <span class="text-[11px] text-stone-400 font-mono">(฿<span id="taxTotalPurchasesThb">0</span>)</span>
           </div>
@@ -634,16 +634,16 @@
         </div>
       </div>
 
-      <!-- Two Distinct Tax Status Summary Cards -->
+      <!-- New Japan Tax-Free System Status & Kiosk Warning Cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <!-- 1. Pending Refund at Counter -->
+        <!-- 1. Pending Airport Refund -->
         <div class="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-bold text-amber-900 flex items-center space-x-1">
               <span>🟡</span>
-              <span>รอไปขอคืนที่เคาน์เตอร์ (ห้าง)</span>
+              <span>รอรับเงินคืนที่สนามบิน (ขาออก)</span>
             </span>
-            <span class="text-[10px] bg-amber-200/70 text-amber-900 px-1.5 py-0.5 rounded-full font-bold">Claim</span>
+            <span class="text-[10px] bg-amber-200/70 text-amber-900 px-1.5 py-0.5 rounded-full font-bold">Refund-at-Departure</span>
           </div>
           <div class="flex items-baseline justify-between pt-1">
             <div>
@@ -657,24 +657,18 @@
           </div>
         </div>
 
-        <!-- 2. Already Tax-Free at Cashier -->
-        <div class="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-3.5 space-y-1.5 shadow-2xs">
+        <!-- 2. Airport Customs Verification Rules -->
+        <div class="bg-indigo-50/80 border border-indigo-200/80 rounded-2xl p-3.5 space-y-1.5 shadow-2xs text-xs">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-emerald-900 flex items-center space-x-1">
-              <span>🟢</span>
-              <span>หักภาษี 0% แล้วที่ร้าน</span>
+            <span class="text-[11px] font-bold text-indigo-950 flex items-center space-x-1">
+              <span>🛫</span>
+              <span>สแกน Kiosk ก่อนโหลดกระเป๋า!</span>
             </span>
-            <span class="text-[10px] bg-emerald-200/70 text-emerald-900 px-1.5 py-0.5 rounded-full font-bold">Done</span>
+            <span class="text-[10px] bg-indigo-200/70 text-indigo-900 px-1.5 py-0.5 rounded-full font-bold">90-Day Rule</span>
           </div>
-          <div class="flex items-baseline justify-between pt-1">
-            <div>
-              <div class="text-lg font-black text-emerald-950 font-mono">+¥<span id="taxDoneSavedJpy">0</span></div>
-              <div class="text-[10px] text-emerald-700 font-mono">+฿<span id="taxDoneSavedThb">0</span></div>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] text-emerald-800">ยอดซื้อปลอดภาษี</span>
-              <div class="text-xs font-bold text-stone-800 font-mono">¥<span id="taxDonePurchasesJpy">0</span></div>
-            </div>
+          <div class="text-[11px] text-indigo-900 space-y-0.5 leading-relaxed pt-0.5">
+            <p>🟢 <strong>สีเขียว:</strong> ผ่านตรวจ โหลดกระเป๋าได้ทันที ระบบสั่งคืนเงิน</p>
+            <p>🔴 <strong>สีแดง:</strong> ต้องนำของไปแสดงต่อเจ้าหน้าที่ศุลกากรก่อนโหลด</p>
           </div>
         </div>
       </div>
@@ -719,16 +713,18 @@
         </div>
       </div>
 
-      <!-- Quick Japan Tax-Free Advice Tip -->
-      <div class="bg-amber-50/70 border border-amber-200/70 rounded-2xl p-3.5 text-xs text-amber-900 space-y-1.5">
+      <!-- Quick Japan Tax-Free Advice Tip (New Refund-at-Departure Rules) -->
+      <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 text-xs text-amber-900 space-y-2">
         <div class="flex items-center space-x-1.5 font-bold text-amber-950">
           <span>💡</span>
-          <span>ข้อควรรู้ Tax-Free ที่ญี่ปุ่น & สนามบิน</span>
+          <span>กฎใหม่ Tax Refund ญี่ปุ่น (ระบบ Pay-Now, Refund-at-Departure)</span>
         </div>
-        <ul class="text-[11px] text-amber-800 space-y-1 list-disc pl-4 font-normal">
-          <li><strong>เกณฑ์ขั้นต่ำ:</strong> ยอดซื้อสินค้าตั้งแต่ 5,000 เยนขึ้นไป (ไม่รวมภาษี) ในร้านเดียวกันในวันเดียวกัน</li>
-          <li><strong>สินค้าอุปโภคบริโภค (Consumables):</strong> ร้านจะบรรจุในถุงซีลใส <em>ห้ามแกะใช้ในประเทศญี่ปุ่น</em> มิฉะนั้นจะถูกเรียกเก็บภาษีคืน</li>
-          <li><strong>ที่สนามบิน (Customs Scan):</strong> แสดงพาสปอร์ตหรือสแกน QR Code Visit Japan Web ที่ตู้ศุลกากรก่อนผ่านด่านตรวจความปลอดภัย</li>
+        <ul class="text-[11px] text-amber-800 space-y-1.5 list-disc pl-4 font-normal">
+          <li><strong>จ่ายราคารวมภาษีที่ร้าน:</strong> ยกเลิกการหักภาษีที่แคชเชียร์ ทุกร้านคิดราคารวมภาษีเต็มจำนวน แล้วรับเงินคืนที่สนามบินขาออก</li>
+          <li><strong>เกณฑ์ขั้นต่ำ & รวมประเภทสินค้าได้:</strong> ยอดซื้อในร้านเดียวกันวันเดียวกันตั้งแต่ 5,000 เยนขึ้นไป (ก่อนภาษี) โดย<em>รวมสินค้าทั่วไปและของกิน/ยา/เครื่องสำอางเข้าด้วยกันได้</em> และไม่มีเพดาน 500,000 เยนแล้ว</li>
+          <li><strong>ยกเลิกถุงซีลพิเศษ:</strong> แพ็กของลงกระเป๋าเดินทางได้ตามปกติ แต่ยังคง<em>ห้ามบริโภคหรือแกะใช้ในญี่ปุ่น</em> มิฉะนั้นจะถูกตัดสิทธิ์</li>
+          <li><strong>สแกน Kiosk ก่อนโหลดกระเป๋า:</strong> ต้องสแกนพาสปอร์ตที่ตู้ Tax Refund Kiosk ที่สนามบิน<strong>ก่อนเช็คอินโหลดกระเป๋า</strong> (หากจอขึ้นสีเขียว = โหลดได้ทันที / สีแดง = ต้องเปิดตรวจสินค้า)</li>
+          <li><strong>เงื่อนไข 90 วัน:</strong> ต้องนำสินค้าออกนอกญี่ปุ่นภายใน 90 วันนับจากวันซื้อ เงินจะคืนเข้าบัตรเครดิต, Digital Wallet, บัญชี หรือตู้ Cash Kiosk</li>
         </ul>
       </div>
 
@@ -866,8 +862,8 @@
           <!-- Step 4 -->
           <div class="relative">
             <div class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-[9px] text-white font-bold">4</div>
-            <div class="font-bold text-stone-900">เช็คอิน โหลดกระเป๋า & สแกนภาษี Tax-Free</div>
-            <div class="text-stone-600 mt-0.5">เคาน์เตอร์เปิด 3 ชั่วโมงก่อนเดินทาง ตรวจสอบน้ำหนักกระเป๋า และสแกนพาสปอร์ตที่เคาน์เตอร์ศุลกากร</div>
+            <div class="font-bold text-stone-900">สแกน Tax Refund Kiosk ก่อน แล้วจึงเช็คอินโหลดกระเป๋า</div>
+            <div class="text-stone-600 mt-0.5">⚠️ สำคัญมาก: สแกนพาสปอร์ตที่ตู้ Kiosk ก่อนโหลดสัมภาระ หากจอขึ้นสีแดงต้องนำสินค้าไปแสดงต่อศุลกากรก่อนโหลดกระเป๋า</div>
           </div>
 
         </div>
@@ -885,7 +881,11 @@
         <div class="space-y-2 text-xs text-stone-700">
           <label class="flex items-start space-x-2 cursor-pointer">
             <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
-            <span>เตรียมพาสปอร์ต, บอร์ดดิ้งพาส, และเอกสาร Tax-Free Receipts ไว้ในกระเป๋าติดตัว</span>
+            <span>สแกนพาสปอร์ตที่ Tax Refund Kiosk <strong>ก่อนโหลดกระเป๋าเดินทาง</strong> (ระบบใหม่ Refund-at-Departure)</span>
+          </label>
+          <label class="flex items-start space-x-2 cursor-pointer">
+            <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
+            <span>เตรียมพาสปอร์ต, บอร์ดดิ้งพาส, บัตรเครดิต/Wallet ที่ลงทะเบียนไว้รับเงินคืน</span>
           </label>
           <label class="flex items-start space-x-2 cursor-pointer">
             <input type="checkbox" class="mt-0.5 rounded text-brand-vermilion focus:ring-0">
@@ -1128,31 +1128,23 @@
             </div>
           </div>
 
-          <!-- Tax Refund Status Selector -->
+          <!-- Tax Refund Status Selector (Refund-at-Departure) -->
           <div>
-            <label class="block text-[10px] font-bold uppercase text-stone-500 mb-1">สถานะ Tax Refund ของสลิปนี้</label>
-            <div class="grid grid-cols-3 gap-2">
+            <label class="block text-[10px] font-bold uppercase text-stone-500 mb-1">สิทธิ์ Tax Refund ของสลิปนี้ (ระบบใหม่ คืนเงินที่สนามบิน)</label>
+            <div class="grid grid-cols-2 gap-2">
               <label class="cursor-pointer">
-                <input type="radio" name="reviewTaxStatus" id="reviewTaxStatusDone" value="Done" class="peer sr-only">
-                <div class="py-2 px-1 text-center rounded-xl bg-white peer-checked:bg-emerald-600 peer-checked:text-white transition-all border border-stone-200 peer-checked:border-emerald-600 shadow-2xs flex flex-col items-center justify-center space-y-0.5">
-                  <span class="text-[11px] font-bold">🟢 หัก 0% แล้ว</span>
-                  <span class="text-[9px] opacity-80">(免税 แคชเชียร์)</span>
-                </div>
-              </label>
-
-              <label class="cursor-pointer">
-                <input type="radio" name="reviewTaxStatus" id="reviewTaxStatusClaim" value="Claim" class="peer sr-only">
-                <div class="py-2 px-1 text-center rounded-xl bg-white peer-checked:bg-amber-500 peer-checked:text-white transition-all border border-stone-200 peer-checked:border-amber-500 shadow-2xs flex flex-col items-center justify-center space-y-0.5">
-                  <span class="text-[11px] font-bold">🟡 รอไปขอคืน</span>
-                  <span class="text-[9px] opacity-80">(เคาน์เตอร์ห้าง)</span>
+                <input type="radio" name="reviewTaxStatus" id="reviewTaxStatusClaim" value="Claim" checked class="peer sr-only">
+                <div class="py-2.5 px-2 text-center rounded-xl bg-white peer-checked:bg-amber-500 peer-checked:text-white transition-all border border-stone-200 peer-checked:border-amber-500 shadow-2xs flex flex-col items-center justify-center space-y-0.5">
+                  <span class="text-xs font-bold">🟡 ขอคืนภาษีที่สนามบิน</span>
+                  <span class="text-[9px] opacity-80">(ยอดรวม ≥ 5,000 เยน / Claim)</span>
                 </div>
               </label>
 
               <label class="cursor-pointer">
                 <input type="radio" name="reviewTaxStatus" id="reviewTaxStatusNo" value="No" class="peer sr-only">
-                <div class="py-2 px-1 text-center rounded-xl bg-white peer-checked:bg-stone-800 peer-checked:text-white transition-all border border-stone-200 peer-checked:border-stone-800 shadow-2xs flex flex-col items-center justify-center space-y-0.5">
-                  <span class="text-[11px] font-bold">⚪ ไม่ทำ Tax</span>
-                  <span class="text-[9px] opacity-80">(ไม่เข้าเกณฑ์)</span>
+                <div class="py-2.5 px-2 text-center rounded-xl bg-white peer-checked:bg-stone-800 peer-checked:text-white transition-all border border-stone-200 peer-checked:border-stone-800 shadow-2xs flex flex-col items-center justify-center space-y-0.5">
+                  <span class="text-xs font-bold">⚪ ไม่ทำ Tax Refund</span>
+                  <span class="text-[9px] opacity-80">(ยอดไม่ถึงเกณฑ์ / ไม่เข้าเกณฑ์)</span>
                 </div>
               </label>
             </div>
@@ -1349,10 +1341,11 @@
     }
 
     function handleGASExpensesSuccess(res) {
-      if (res && res.success && res.data && res.data.length > 0) {
+      if (res && res.success && Array.isArray(res.data)) {
         expensesData = res.data;
         saveExpensesToStorage();
         renderExpenses();
+        renderTaxRefund();
       }
     }
 
@@ -1379,10 +1372,11 @@
 
         google.script.run
           .withSuccessHandler((res) => {
-            if (res && res.success && res.data && res.data.length > 0) {
+            if (res && res.success && Array.isArray(res.data)) {
               expensesData = res.data;
               saveExpensesToStorage();
               renderExpenses();
+              renderTaxRefund();
             }
           })
           .getExpenses();
@@ -2016,18 +2010,43 @@
     }
 
     function deleteExpense(id) {
-      expensesData = expensesData.filter(e => e.id !== id);
+      if (!confirm('ต้องการลบรายการนี้ใช่หรือไม่?')) return;
+      expensesData = expensesData.filter(e => String(e.id) !== String(id));
       saveExpensesToStorage();
       renderExpenses();
+      renderTaxRefund();
       showToast('ลบรายการเรียบร้อย');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(() => console.log('Deleted expense ' + id + ' from sheet'))
+          .withFailureHandler(err => console.warn('Could not delete expense from sheet', err))
+          .deleteExpenseSheet(id);
+      }
     }
 
     function clearAllExpenses() {
-      if (confirm('คุณต้องการล้างประวัติค่าใช้จ่ายในเครื่องทั้งหมดใช่หรือไม่?')) {
+      if (confirm('⚠️ ต้องการล้างข้อมูลค่าใช้จ่ายทั้งหมดใช่หรือไม่?\n\nข้อมูลทั้งในเครื่องและใน Google Sheets (Expenses) จะถูกลบออกทั้งหมด')) {
         expensesData = [];
         saveExpensesToStorage();
         renderExpenses();
-        showToast('ล้างประวัติค่าใช้จ่ายแล้ว');
+        renderTaxRefund();
+        showToast('กำลังล้างข้อมูลใน Google Sheet...');
+
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run
+            .withSuccessHandler(res => {
+              console.log('Cleared all expenses in sheet');
+              showToast('✨ ล้างข้อมูลทั้งในเครื่องและ Google Sheet สำเร็จ!');
+            })
+            .withFailureHandler(err => {
+              console.warn('Could not clear expenses in sheet', err);
+              showToast('ล้างในเครื่องแล้ว (แต่ซิงค์ชีทไม่สำเร็จ: ' + err.message + ')');
+            })
+            .clearAllExpensesSheet();
+        } else {
+          showToast('ล้างประวัติค่าใช้จ่ายเรียบร้อย');
+        }
       }
     }
 
@@ -2666,7 +2685,7 @@
             storeName: "Don Quijote Tenjin (ドン・キホーテ)",
             date: new Date().toISOString().split('T')[0],
             receiptNumber: "REC-" + Date.now().toString().slice(-6),
-            taxStatus: "Done",
+            taxStatus: "Claim",
             taxSavedOrClaimJPY: 1180,
             totalJPY: 12980,
             items: [
@@ -2702,14 +2721,15 @@
       if (dateInput) dateInput.value = data.date || (new Date().toISOString().split('T')[0]);
       if (idDisplay) idDisplay.textContent = data.receiptNumber || ('REC-' + Date.now().toString().slice(-6));
 
-      // Tax status radio selection
+      // Tax status radio selection (Refund-at-Departure: Claim vs No)
       const taxStatus = data.taxStatus || 'No';
-      const rDone = document.getElementById('reviewTaxStatusDone');
       const rClaim = document.getElementById('reviewTaxStatusClaim');
       const rNo = document.getElementById('reviewTaxStatusNo');
-      if (taxStatus === 'Done' && rDone) rDone.checked = true;
-      else if (taxStatus === 'Claim' && rClaim) rClaim.checked = true;
-      else if (rNo) rNo.checked = true;
+      if ((taxStatus === 'Claim' || taxStatus === 'Done') && rClaim) {
+        rClaim.checked = true;
+      } else if (rNo) {
+        rNo.checked = true;
+      }
 
       // Prepare review items array
       reviewItems = (data.items || []).map((it, idx) => ({
@@ -2897,12 +2917,10 @@
       const date = document.getElementById('reviewDate')?.value || new Date().toISOString().split('T')[0];
       const receiptId = (document.getElementById('reviewReceiptIdDisplay')?.textContent || ('REC-' + Date.now().toString().slice(-6))).trim();
 
-      // Tax status
+      // Tax status (Refund-at-Departure)
       let taxStatus = 'No';
-      const rDone = document.getElementById('reviewTaxStatusDone');
       const rClaim = document.getElementById('reviewTaxStatusClaim');
-      if (rDone && rDone.checked) taxStatus = 'Done';
-      else if (rClaim && rClaim.checked) taxStatus = 'Claim';
+      if (rClaim && rClaim.checked) taxStatus = 'Claim';
 
       const saveBtn = document.getElementById('btnConfirmSaveReceipt');
       if (saveBtn) {
@@ -3049,14 +3067,9 @@
         }
       }
 
-      // Calculations by Tax Status (Claim vs Done)
+      // Calculations (Under Japan 2026 Refund-at-Departure: All tax items are eligible for airport refund)
       let totalPurchasesJPY = 0;
       let totalPurchasesTHB = 0;
-
-      let claimPurchasesJPY = 0;
-      let claimPurchasesTHB = 0;
-      let donePurchasesJPY = 0;
-      let donePurchasesTHB = 0;
 
       let piPurchasesJPY = 0;
       let piPurchasesTHB = 0;
@@ -3070,15 +3083,6 @@
         const thb = (e.amountTHB || Math.round(jpy * exchangeRate));
         totalPurchasesJPY += jpy;
         totalPurchasesTHB += thb;
-
-        const isClaim = (e.taxStatus === 'Claim' || (!e.taxStatus && e.isTaxRefund));
-        if (isClaim) {
-          claimPurchasesJPY += jpy;
-          claimPurchasesTHB += thb;
-        } else {
-          donePurchasesJPY += jpy;
-          donePurchasesTHB += thb;
-        }
 
         const p = e.person || 'All';
         if (p === 'Pi') {
@@ -3095,11 +3099,6 @@
 
       const totalRefundJPY = Math.round(totalPurchasesJPY * taxRefundRate);
       const totalRefundTHB = Math.round(totalPurchasesTHB * taxRefundRate);
-
-      const claimRefundJPY = Math.round(claimPurchasesJPY * taxRefundRate);
-      const claimRefundTHB = Math.round(claimPurchasesTHB * taxRefundRate);
-      const doneSavedJPY = Math.round(donePurchasesJPY * taxRefundRate);
-      const doneSavedTHB = Math.round(donePurchasesTHB * taxRefundRate);
 
       const piRefundJPY = Math.round(piPurchasesJPY * taxRefundRate);
       const piRefundTHB = Math.round(piPurchasesTHB * taxRefundRate);
@@ -3119,14 +3118,10 @@
       setEl('taxTotalRefundThb', totalRefundTHB.toLocaleString());
       setEl('taxReceiptCount', taxItems.length);
 
-      // Separate Distinct Status Cards
-      setEl('taxClaimRefundJpy', claimRefundJPY.toLocaleString());
-      setEl('taxClaimRefundThb', claimRefundTHB.toLocaleString());
-      setEl('taxClaimPurchasesJpy', claimPurchasesJPY.toLocaleString());
-
-      setEl('taxDoneSavedJpy', doneSavedJPY.toLocaleString());
-      setEl('taxDoneSavedThb', doneSavedTHB.toLocaleString());
-      setEl('taxDonePurchasesJpy', donePurchasesJPY.toLocaleString());
+      // Airport Refund Status Card
+      setEl('taxClaimRefundJpy', totalRefundJPY.toLocaleString());
+      setEl('taxClaimRefundThb', totalRefundTHB.toLocaleString());
+      setEl('taxClaimPurchasesJpy', totalPurchasesJPY.toLocaleString());
 
       // Per-person
       setEl('taxPiPurchasesJpy', piPurchasesJPY.toLocaleString());
@@ -3237,10 +3232,7 @@
                 <div class="space-y-1">
                   <div class="flex items-center space-x-2 flex-wrap">
                     <span class="font-bold text-stone-900 text-xs">${escapeHtml(storeName)}</span>
-                    ${isDone 
-                      ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">🟢 หัก 0% แล้วที่ร้าน</span>' 
-                      : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">🟡 รอขอคืนที่เคาน์เตอร์</span>'
-                    }
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">🟡 รอรับเงินคืนที่สนามบิน</span>
                   </div>
                   <div class="text-[11px] text-stone-400 flex items-center space-x-2">
                     <span>${normalizeDateStr(group.date)}</span>
@@ -3258,8 +3250,8 @@
 
               <!-- Refund Info Bar -->
               <div class="flex items-center justify-between pt-2 border-t border-stone-100 text-xs">
-                <div class="flex items-center space-x-1.5 ${isDone ? 'text-emerald-700' : 'text-amber-800'} font-semibold text-[11px]">
-                  <span>${isDone ? '✨ ภาษีที่ประหยัดได้:' : '🏷️ ยอดเงินคืนภาษี:'}</span>
+                <div class="flex items-center space-x-1.5 text-amber-800 font-semibold text-[11px]">
+                  <span>🏷️ เงินคืนภาษีที่สนามบิน:</span>
                   <span class="font-bold font-mono text-xs">+¥${groupEstRefund.toLocaleString()}</span>
                   <span class="font-mono text-[10px] opacity-80">(+฿${groupEstRefundThb.toLocaleString()})</span>
                 </div>

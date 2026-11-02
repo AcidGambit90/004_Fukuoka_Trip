@@ -64,6 +64,10 @@ function doGet(e) {
     return createJsonResponse({ success: true, message: fixFukuokaSheetColumns() });
   } else if (action === 'fixExpensesHeader') {
     return createJsonResponse({ success: true, message: fixExpensesSheetHeader() });
+  } else if (action === 'clearExpenses') {
+    return createJsonResponse(clearAllExpensesSheet());
+  } else if (action === 'deleteExpense') {
+    return createJsonResponse(deleteExpenseSheet(e.parameter.id));
   }
   
   // Render Frontend HTML
@@ -452,6 +456,69 @@ function addBatchExpenses(items, metadata) {
 }
 
 /**
+ * Deletes a single expense row from Google Sheet by its ID
+ * 
+ * @param {string} id - Expense ID to delete
+ * @return {Object}
+ */
+function deleteExpenseSheet(id) {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = getOrCreateExpensesSheet(ss);
+    if (!sheet) {
+      return { success: false, error: 'Sheet not found' };
+    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return { success: false, error: 'No data in sheet' };
+    }
+    
+    let foundRow = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim() === String(id).trim()) {
+        foundRow = i + 1; // 1-indexed row number
+        break;
+      }
+    }
+    
+    if (foundRow > 0) {
+      sheet.deleteRow(foundRow);
+      return { success: true, message: 'Deleted expense ' + id + ' from sheet' };
+    }
+    return { success: false, error: 'Expense ID not found in sheet: ' + id };
+  } catch (error) {
+    Logger.log('Error deleting expense row: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Clears all expense rows in Google Sheet (keeps row 1 headers intact)
+ * 
+ * @return {Object}
+ */
+function clearAllExpensesSheet() {
+  try {
+    const ss = getSpreadsheet();
+    const sheet = getOrCreateExpensesSheet(ss);
+    if (!sheet) {
+      return { success: false, error: 'Sheet not found' };
+    }
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRows(2, lastRow - 1);
+    }
+    return {
+      success: true,
+      message: 'ล้างข้อมูลรายจ่ายทั้งหมดใน Google Sheet เรียบร้อยแล้ว'
+    };
+  } catch (error) {
+    Logger.log('Error clearing expenses sheet: ' + error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Toggles or updates the Tax Refund status of an expense in Google Sheet
  * 
  * @param {string} id - Expense ID
@@ -482,10 +549,8 @@ function toggleExpenseTaxRefund(id, status) {
     let statusVal = 'No';
     if (typeof status === 'string') {
       const lower = status.toLowerCase();
-      if (lower === 'claim' || lower === 'yes' || lower === 'true') {
+      if (lower === 'claim' || lower === 'yes' || lower === 'true' || lower === 'done' || lower === '免税') {
         statusVal = 'Claim';
-      } else if (lower === 'done' || lower === 'deducted' || lower === '免税') {
-        statusVal = 'Done';
       } else {
         statusVal = 'No';
       }
@@ -563,7 +628,7 @@ function getExpenses() {
       const amountTHB = parseFloat(colThb >= 0 ? row[colThb] : (row.length >= 9 ? row[6] : row[5])) || 0;
       const note = (row.length >= 9 ? (row[7] || '') : (row[6] || ''));
       
-      // Determine Tax Refund status ('Claim', 'Done', 'No')
+      // Determine Tax Refund status ('Claim' vs 'No') under new Japan 2026 refund-at-departure rules
       let taxStatus = 'No';
       let isTaxRefund = false;
       let rawTax = '';
@@ -574,10 +639,7 @@ function getExpenses() {
       }
       
       const lowerTax = rawTax.toLowerCase();
-      if (lowerTax === 'done' || lowerTax === 'deducted' || lowerTax === '免税') {
-        taxStatus = 'Done';
-        isTaxRefund = true;
-      } else if (lowerTax === 'claim' || lowerTax === 'yes' || lowerTax === 'true' || lowerTax === '1' || lowerTax === 'ทำ') {
+      if (lowerTax === 'claim' || lowerTax === 'done' || lowerTax === 'yes' || lowerTax === 'true' || lowerTax === '1' || lowerTax === 'ทำ' || lowerTax === '免税') {
         taxStatus = 'Claim';
         isTaxRefund = true;
       } else {
@@ -681,16 +743,18 @@ function processReceiptImages(imagesBase64) {
       };
     }
 
-    // Expert prompt tailored for Japanese retail receipts & tourists
+    // Expert prompt tailored for Japan's new Tax-Free system (Effective Nov 1, 2026: Pay-Now, Refund-at-Departure)
     const systemPrompt = 'You are an expert Japanese shopping receipt analyzer for foreign travelers visiting Japan.\n' +
-      'The user provides 1 or more images of a single shopping receipt taken sequentially from top to bottom (because long receipts require multiple overlapping photos).\n' +
+      'Under Japan\'s new Consumption Tax Exemption system (effective Nov 1, 2026), foreign tourists pay the full tax-inclusive price at retail stores and receive their refund at departure (airport/seaport customs verification).\n' +
+      'Category distinctions (general goods vs consumables) are abolished, and the 500,000 JPY limit is abolished. All goods purchased at the same tax-free shop on the same day can be combined to meet the minimum spend.\n' +
+      'The user provides 1 or more images of a single shopping receipt taken sequentially from top to bottom (for long receipts).\n' +
       'Merge the images seamlessly, detect any overlapping lines, and ensure NO duplicate items.\n\n' +
       'Analyze the receipt and return strictly JSON matching this structure:\n' +
       '{\n' +
       '  "storeName": "Store name in English or Thai + Japanese if available (e.g. \'Don Quijote Tenjin (ドン・キホーテ)\', \'Bic Camera\', \'Daimaru\', \'Matsumoto Kiyoshi\')",\n' +
       '  "date": "YYYY-MM-DD format (convert Reiwa R6->2024, R7->2025, R8->2026, or use current date if missing)",\n' +
       '  "receiptNumber": "Receipt ID or transaction number if visible",\n' +
-      '  "taxStatus": "Done" | "Claim" | "No",\n' +
+      '  "taxStatus": "Claim" | "No",\n' +
       '  "taxSavedOrClaimJPY": number,\n' +
       '  "totalJPY": number,\n' +
       '  "items": [\n' +
@@ -703,10 +767,9 @@ function processReceiptImages(imagesBase64) {
       '  ],\n' +
       '  "note": "Brief summary e.g. \'Donki shopping 10 items\'"\n' +
       '}\n\n' +
-      'Tax Status Rules for Japan:\n' +
-      '- "Done": If the receipt was ALREADY processed Tax-Free at the cashier (look for \'免税\', \'Tax-Free\', 0% consumption tax, or tax deducted).\n' +
-      '- "Claim": If the receipt includes 10% or 8% consumption tax (消費税) AND the total purchase is >= 5,000 JPY (needs to be claimed at the Tax Refund Counter, e.g. department stores like Daimaru/Iwataya).\n' +
-      '- "No": If total is < 5,000 JPY or non-eligible purchase.\n\n' +
+      'Tax Status Rules for Japan (Refund-at-Departure):\n' +
+      '- "Claim": The purchase is eligible for tax refund at departure (store is a participating tax-free shop, total pre-tax spend >= 5,000 JPY or tax-inclusive spend >= 5,500 JPY). General goods and consumables can be combined together.\n' +
+      '- "No": Non-eligible purchase (total spend < 5,000 JPY, non-tax-free shop, dine-in restaurant meal, train tickets, etc.).\n\n' +
       'Ensure totalJPY matches the final amount paid (合計 / お買上合計).\n' +
       'Return ONLY raw JSON, with no markdown code blocks or surrounding text.';
 
@@ -1062,6 +1125,7 @@ function onOpen() {
       .addItem('1. ปรับฟิลด์ Fukuoka_list (Location ⇄ Desc)', 'fixFukuokaSheetColumns')
       .addItem('2. ปรับหัวตาราง Expenses (แก้คอลัมน์เลื่อน)', 'fixExpensesSheetHeader')
       .addItem('3. ให้สิทธิ์เชื่อมต่อภายนอก (Authorize API)', 'authorizeExternalRequest')
+      .addItem('4. ล้างข้อมูลค่าใช้จ่ายทั้งหมดในชีต (Clear Expenses)', 'clearAllExpensesSheet')
       .addToUi();
   } catch (e) {
     Logger.log('Cannot build UI in non-spreadsheet context: ' + e.message);
